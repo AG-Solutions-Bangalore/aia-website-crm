@@ -1,37 +1,28 @@
-import { Activity, Download, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { useContext, useEffect, useState } from "react";
-import Logout from "./auth/log-out";
-import { ContextPanel } from "@/lib/context-panel";
 import { cn } from "@/lib/utils";
+import { default as appLogout, default as useAppLogout } from "@/utils/logout";
 import { useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { Activity, Download, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
+import Logout from "./auth/log-out";
 import { Badge } from "./ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
-import appLogout from "@/utils/logout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 export function NavUser({ user }) {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(
-    localStorage.getItem("sidebar:state") == "true"
-  );
 
-  const navigate = useNavigate();
-  const user_position = Cookies.get("email");
+  const sidebarOpen = useSelector((state) => state.ui.sidebarOpen);
 
-  const handleLogout = () => {
-    appLogout();
-    navigate("/");
-  };
+  const handleLogout = useAppLogout();
 
   const initialsChar = user.name
     .split(" ")
@@ -40,26 +31,29 @@ export function NavUser({ user }) {
     .toUpperCase();
 
   // 🔹 Watch for sidebar state changes in localStorage
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setSidebarOpen(localStorage.getItem("sidebar:state") == "true");
-    };
+  // useEffect(() => {
+  //   const handleStorageChange = () => {
+  //     setSidebarOpen(localStorage.getItem("sidebar:state") == "true");
+  //   };
 
-    window.addEventListener("storage", handleStorageChange);
-    const interval = setInterval(handleStorageChange, 500);
+  //   window.addEventListener("storage", handleStorageChange);
+  //   const interval = setInterval(handleStorageChange, 500);
 
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("storage", handleStorageChange);
+  //     clearInterval(interval);
+  //   };
+  // }, []);
 
   // -------------------------- upgrade start -------------------
-  const { isPanelUp } = useContext(ContextPanel);
-  const [showUpdateBadge, setShowUpdateBadge] = useState(false);
+  const showUpdateBadge = useSelector(
+    (state) => state.version?.showUpdateDialog
+  );
+  // const showUpdateBadge = true;
   const [openDialog, setOpenDialog] = useState(false);
   const [showDot, setShowDot] = useState(false);
-
+  const verCon = useSelector((state) => state.version.version);
+  const localVersion = useSelector((state) => state.auth?.version);
   const updateMutation = useMutation({
     mutationFn: async () => Promise.resolve(),
     onSuccess: () => {
@@ -72,12 +66,9 @@ export function NavUser({ user }) {
       toast.error("Update failed. Please try again.");
     },
   });
-
   useEffect(() => {
-    const verCon = Cookies.get("ver_con");
-    if (verCon && isPanelUp?.version?.version_panel) {
-      if (verCon !== isPanelUp.version.version_panel) {
-        setShowUpdateBadge(true);
+    if (verCon && localVersion) {
+      if (verCon !== localVersion) {
         setShowDot(true);
         const dotTimer = setTimeout(() => {
           setShowDot(false);
@@ -86,7 +77,7 @@ export function NavUser({ user }) {
         return () => clearTimeout(dotTimer);
       }
     }
-  }, [isPanelUp]);
+  }, [localVersion, verCon]);
 
   const handleUpdate = () => updateMutation.mutate();
   // -------------------------- upgrade end ---------------------
@@ -110,7 +101,7 @@ export function NavUser({ user }) {
               {sidebarOpen && (
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user_position}</span>
+                  <span className="truncate text-xs">{user.email}</span>
                 </div>
               )}
 
@@ -149,8 +140,7 @@ export function NavUser({ user }) {
                     </div>
                   </div>
                   <div className="text-[12px] text-white/80 mt-0.5">
-                    v{Cookies.get("ver_con")} → v
-                    {isPanelUp?.version?.version_panel}
+                    v{localVersion} → v{verCon}
                   </div>
                 </div>
               ) : (
@@ -181,7 +171,7 @@ export function NavUser({ user }) {
                   Update Available
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
-                  Version v{isPanelUp?.version?.version_panel}
+                  Version v{verCon}
                 </p>
               </div>
             </div>

@@ -58,7 +58,6 @@ export default function LoginAuth() {
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const emailInputRef = useRef(null);
-  console.log(login.postLogin, "login.postLogin");
   const loadingMessages = [
     "Setting things up for you...",
     "Checking your credentials...",
@@ -66,7 +65,6 @@ export default function LoginAuth() {
     "Almost there...",
   ];
 
-  // Auto-focus on email input
   useEffect(() => {
     if (emailInputRef.current) {
       emailInputRef.current.focus();
@@ -90,7 +88,6 @@ export default function LoginAuth() {
     };
   }, [isLoading]);
 
-
   const handleKeyPress = (event) => {
     if (event.key === "Enter" && !isLoading) {
       handleSubmit(event);
@@ -110,9 +107,8 @@ export default function LoginAuth() {
     formData.append("password", password);
     setIsLoading(true);
     try {
-   
       const res = await api.auth.login(formData);
-  
+
       if (res?.data?.code === 200) {
         const { UserInfo, version, year } = res?.data;
 
@@ -140,7 +136,7 @@ export default function LoginAuth() {
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
       setIsLoading(false);
-    }finally{
+    } finally {
       setIsLoading(false);
     }
   };
