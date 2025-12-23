@@ -5,9 +5,10 @@ import SessionTimeoutTracker from "./components/session-timeout-tracker/session-
 import AppRoutes from "./routes/app-routes";
 import useAppLogout from "./utils/logout";
 
+
 function App() {
   const time = useSelector((state) => state.auth.tokenExpireAt);
-  console.log(time, "time");
+  // console.log(time, "time");
   const handleLogout = useAppLogout();
 
   return (
@@ -16,6 +17,7 @@ function App() {
       <Toaster richColors position="top-right" />
       <ScrollToTop />
       <SessionTimeoutTracker expiryTime={time} onLogout={handleLogout} />
+     
       <AppRoutes />
     </>
   );
