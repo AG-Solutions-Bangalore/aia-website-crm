@@ -6,7 +6,7 @@ export const getAuthToken = (reduxToken) => {
   try {
     const raw = Cookies.get("persist:auth");
     if (!raw) return null;
-console.log(raw)
+// console.log(raw)
     const parsed = JSON.parse(raw);
     return null;
   } catch {

@@ -10,9 +10,11 @@ import Home from "@/app/home/home";
 import ProtectedRoute from "./protected-route";
 import NotFound from "@/app/errors/not-found";
 import PopupList from "@/app/popup/popup";
+import ErrorBoundary from "@/components/error-boundry/error-boundry";
 
 function AppRoutes() {
   return (
+    <ErrorBoundary>
     <Routes>
       <Route path="/" element={<AuthRoute />}>
         <Route path="/" element={<Login />} />
@@ -48,6 +50,7 @@ function AppRoutes() {
 
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </ErrorBoundary>
   );
 }
 

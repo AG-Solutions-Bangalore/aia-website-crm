@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/apiClient";
-import DataTable from "@/components/common/DataTable";
+import DataTable from "@/components/common/data-table";
 import { POPUP_API } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 
