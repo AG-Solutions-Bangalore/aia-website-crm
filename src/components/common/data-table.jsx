@@ -31,6 +31,7 @@ const DataTable = ({
   columns = [],
   pageSize = 10,
   searchPlaceholder = "Search...",
+  extraContent,
 }) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
@@ -111,7 +112,7 @@ const DataTable = ({
       </div>
      
 
-      <div className="border rounded">
+      <div className="rounded-none border min-h-[31rem] grid grid-cols-1">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
