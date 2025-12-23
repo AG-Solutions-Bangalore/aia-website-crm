@@ -32,6 +32,7 @@ const DataTable = ({
   pageSize = 10,
   searchPlaceholder = "Search...",
   extraContent,
+  addButton,
 }) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
@@ -56,17 +57,16 @@ const DataTable = ({
 
   return (
     <div className="space-y-3">
-
-<div className="flex items-center justify-between py-1">
+      <div className="flex items-center justify-between py-1">
         <div className="relative w-64">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
           <Input
-                   value={globalFilter ?? ""}
-                   onChange={(e) => setGlobalFilter(e.target.value)}
-                   placeholder={searchPlaceholder}
+            value={globalFilter ?? ""}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            placeholder={searchPlaceholder}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
-                setSearchTerm("");
+                setGlobalFilter("");
               }
             }}
             className="pl-8 h-9 text-sm bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200"
@@ -83,35 +83,41 @@ const DataTable = ({
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="text-xs capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                .map((column) => {
+         
+                  const columnDef = columns.find(col => 
+                    col.accessorKey === column.id || col.id === column.id
+                  );
+                  
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="text-xs capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    >
+       
+                      {columnDef?.header || column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
             </DropdownMenuContent>
           </DropdownMenu>
           
-            <>
-              <Link 
-                to='/'
-     
-              >
-                <Button variant="default">
-                  <SquarePlus className="h-3 w-3 mr-2" /> Individual
-                </Button>
-              </Link>
-             
-            </>
-
+   
+          {addButton && (
+            <Link to={addButton.to}>
+              <Button variant="default" size="sm" className="h-9">
+                <SquarePlus className="h-3 w-3 mr-2" /> {addButton.label}
+              </Button>
+            </Link>
+          )}
+          
+  
+          {extraContent}
         </div>
       </div>
      
-
       <div className="rounded-none border min-h-[31rem] grid grid-cols-1">
         <Table>
           <TableHeader>

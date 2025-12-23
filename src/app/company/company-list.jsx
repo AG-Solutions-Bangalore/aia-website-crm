@@ -57,6 +57,10 @@ const CompanyList = () => {
       columns={columns}
       pageSize={10}
       searchPlaceholder="Search company..."
+      addButton={{
+        to: '/add-company', 
+        label: 'Company' 
+      }}
     />
   );
 };

@@ -54,6 +54,10 @@ const BannerList = () => {
       columns={columns}
       pageSize={10}
       searchPlaceholder="Search banner..."
+      addButton={{
+        to: '/add-banner', 
+        label: 'Banner' 
+      }}
     />
   );
 };
