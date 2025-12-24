@@ -31,10 +31,18 @@ export const FAQ_API = {
 export const BLOG_API = {
   list: "/blog",
   create: "/blog",
+  dropdown: "/blogs",
   byId: (id) => `/blog/${id}`,
+  delete: (id) => `/blog/${id}`,
+  deleteSub: (id) => `/blog-sub/${id}`,
+  deleteRelated: (id) => `/blog-related/${id}`,
   updateById: (id) => `/blog/${id}?_method=PUT`,
 };
 export const PAGE_TWO_API = {
   dropdown: "/page-two",
+  
+};
+export const CHANGE_PASSWORD_API = {
+  create: "/panel-change-password",
   
 };
