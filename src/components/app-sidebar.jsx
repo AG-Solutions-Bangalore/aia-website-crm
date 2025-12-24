@@ -39,13 +39,13 @@ const NAVIGATION_CONFIG = {
       isActive: false,
     },
     BANNERLIST: {
-      title: "Banner List",
+      title: "Banner",
       url: "/banner-list",
       icon: Frame,
       isActive: false,
     },
     COMPANYLIST: {
-      title: "Company List",
+      title: "Company",
       url: "/company-list",
       icon: Frame,
       isActive: false,
@@ -65,6 +65,19 @@ const NAVIGATION_CONFIG = {
     STUDENTLIST: {
       title: "Student List",
       url: "/student-list",
+      icon: Frame,
+      isActive: false,
+    },
+
+    FAQLIST: {
+      title: "FAQ",
+      url: "/faq-list",
+      icon: Frame,
+      isActive: false,
+    },
+    BLOGLIST: {
+      title: "Blog",
+      url: "/blog-list",
       icon: Frame,
       isActive: false,
     },
@@ -292,6 +305,8 @@ const USER_ROLE_PERMISSIONS = {
       "DONOR",
       "RECEIPT",
       "SCHOOL",
+      "FAQLIST",
+      "BLOGLIST",
     ],
     navMainReport: [
       "SUMMARY",
@@ -302,6 +317,8 @@ const USER_ROLE_PERMISSIONS = {
       "STUDENTLIST",
       "OTHER",
       "SETTINGS",
+      "FAQLIST",
+      "BLOGLIST",
     ],
   },
 
