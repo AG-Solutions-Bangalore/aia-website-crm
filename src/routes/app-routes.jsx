@@ -1,4 +1,3 @@
-import SignUp from "@/app/auth/sign-up";
 import Maintenance from "@/components/common/maintenance";
 import LoadingBar from "@/components/loader/loading-bar";
 import { Suspense } from "react";
@@ -29,6 +28,7 @@ import Settings from "@/app/setting/setting";
 import BlogList from "@/app/blog/blog-list";
 import CreateBlog from "@/app/blog/create-blog";
 import NewsLetter from "@/app/newsletter/news-letter";
+import EditBlog from "../app/blog/edit-blog";
 
 function AppRoutes() {
   return (
@@ -221,6 +221,14 @@ function AppRoutes() {
             element={
               <Suspense fallback={<LoadingBar />}>
                 <CreateBlog />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/edit-blog/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <EditBlog />
               </Suspense>
             }
           />
