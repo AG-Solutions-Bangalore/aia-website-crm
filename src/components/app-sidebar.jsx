@@ -308,22 +308,18 @@ const USER_ROLE_PERMISSIONS = {
       "LETUREYOUTUBELIST",
       "STUDENTLIST",
       "NEWSLETTERLIST",
-      "MEMBERSHIP",
-      "DONOR",
-      "RECEIPT",
-      "SCHOOL",
+      
       "FAQLIST",
       "BLOGLIST",
     ],
     navMainReport: [
-      "SUMMARY",
+     
       "POPUPLIST",
-      "DOWNLOADS",
-      "COUNTRYLIST",
+      
       "LETUREYOUTUBELIST",
       "NEWSLETTERLIST",
       "STUDENTLIST",
-      "OTHER",
+      
       "SETTINGS",
       "FAQLIST",
       "BLOGLIST",
