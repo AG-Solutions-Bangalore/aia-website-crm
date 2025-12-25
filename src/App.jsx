@@ -8,7 +8,6 @@ import useAppLogout from "./utils/logout";
 
 function App() {
   const time = useSelector((state) => state.auth.tokenExpireAt);
-  // console.log(time, "time");
   const handleLogout = useAppLogout();
 
   return (

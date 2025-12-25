@@ -1,4 +1,5 @@
 import PageHeader from "@/components/common/page-header";
+import ImageUpload from "@/components/image-upload/image-upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { BANNER_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Image, Loader2, Upload, User, X } from "lucide-react";
+import { Image, Loader2, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -21,13 +22,14 @@ const CreateBanner = () => {
     banner_text: "",
     banner_link: "",
     banner_image_alt: "",
+    banner_image: null,
   });
 
   const [errors, setErrors] = useState({});
 
-  const [previewImage, setPreviewImage] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-
+  const [preview, setPreview] = useState({
+    banner_image: "",
+  });
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -65,7 +67,7 @@ const CreateBanner = () => {
       isValid = false;
     }
 
-    if (!selectedFile) {
+    if (!preview.banner_image && !formData.banner_image) {
       newErrors.banner_image = "Banner image is required";
       isValid = false;
     }
@@ -82,50 +84,17 @@ const CreateBanner = () => {
       return false;
     }
   };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const newErrors = [];
-
-    if (file.type !== "image/webp") {
-      newErrors.push("The image must be in WEBP format only.");
+  const handleImageChange = (fieldName, file) => {
+    if (file) {
+      setFormData({ ...formData, [fieldName]: file });
+      const url = URL.createObjectURL(file);
+      setPreview({ ...preview, [fieldName]: url });
+      setErrors({ ...errors, [fieldName]: "" });
     }
-
-    if (file.size > 5 * 1024 * 1024) {
-      newErrors.push("Image must be less than 5MB.");
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        if (img.width !== 1920 || img.height !== 858) {
-          newErrors.push("The image size must be exactly 1920x858 pixels.");
-        }
-
-        if (newErrors.length > 0) {
-          setErrors((prev) => ({
-            ...prev,
-            banner_image: newErrors.join(" \n "),
-          }));
-          setSelectedFile(null);
-          setPreviewImage(null);
-        } else {
-          setSelectedFile(file);
-          setPreviewImage(reader.result);
-          setErrors((prev) => ({ ...prev, banner_image: "" }));
-        }
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
   };
-
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewImage(null);
+  const handleRemoveImage = (fieldName) => {
+    setFormData({ ...formData, [fieldName]: null });
+    setPreview({ ...preview, [fieldName]: "" });
   };
 
   const handleSubmit = async (e) => {
@@ -142,7 +111,9 @@ const CreateBanner = () => {
     formDataObj.append("banner_text", formData.banner_text);
     formDataObj.append("banner_link", formData.banner_link || "");
     formDataObj.append("banner_image_alt", formData.banner_image_alt);
-    formDataObj.append("banner_image", selectedFile);
+    if (formData.banner_image instanceof File) {
+      formDataObj.append("banner_image", formData.banner_image);
+    }
     const loadingToast = toast.loading("Creating banner...");
     try {
       const res = await trigger({
@@ -164,8 +135,6 @@ const CreateBanner = () => {
           banner_link: "",
           banner_image_alt: "",
         });
-        setSelectedFile(null);
-        setPreviewImage(null);
         setErrors({});
 
         const fileInput = document.getElementById("banner_image");
@@ -183,8 +152,6 @@ const CreateBanner = () => {
       const errors = error?.response?.data?.msg;
 
       toast.error(errors);
-
-      console.error("Banner creation error:", error);
     }
   };
 
@@ -300,72 +267,24 @@ const CreateBanner = () => {
               </div>
             </div>
 
-            <div className="space-y-2 col-span-2">
-              <Label htmlFor="banner_image" className="text-sm font-medium">
-                Banner Image *
-              </Label>
-
-              {selectedFile ? (
-                <div className="border-2 border-gray-300 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-12 h-12 rounded overflow-hidden bg-gray-100">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium truncate max-w-xs">
-                          {selectedFile.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                  <Input
-                    id="banner_image"
-                    name="banner_image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  <Label htmlFor="banner_image" className="cursor-pointer">
-                    <div className="flex flex-col items-center gap-2">
-                      <Upload className="h-8 w-8 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium">
-                          Click to upload banner image
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          WEBP format only, must be 1920x858 pixels, up to 5MB
-                        </p>
-                      </div>
-                    </div>
-                  </Label>
-                </div>
-              )}
-
-              {errors.banner_image && (
-                <p className="text-sm text-red-500 whitespace-pre-line">
-                  {errors.banner_image}
-                </p>
-              )}
+            <div>
+              <ImageUpload
+                id="banner_image"
+                label="Banner Image"
+                required
+                selectedFile={formData.banner_image}
+                previewImage={preview.banner_image}
+                onFileChange={(e) =>
+                  handleImageChange("banner_image", e.target.files?.[0])
+                }
+                onRemove={() => handleRemoveImage("banner_image")}
+                error={errors.banner_image}
+                format="WEBP"
+                allowedExtensions={["webp"]}
+                dimensions="1920x858"
+                maxSize={5}
+                requiredDimensions={[1920, 858]}
+              />
             </div>
           </form>
         </CardContent>

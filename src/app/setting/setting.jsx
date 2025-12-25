@@ -186,7 +186,7 @@ const Settings = () => {
                             <Button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || !formData.currentPassword || !formData.newPassword}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-1"
+                                className="w-full mt-1"
                             >
                                 {isSubmitting ? (
                                     <>

@@ -1,23 +1,17 @@
-import React, { useEffect, useState } from "react";
+import { GroupButton } from "@/components/group-button";
+import LoadingBar from "@/components/loader/loading-bar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useApiMutation } from "@/hooks/use-mutation";
 import { COUNTRY_API } from "@/constants/apiConstants";
-import LoadingBar from "@/components/loader/loading-bar";
+import { useApiMutation } from "@/hooks/use-mutation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const initialState = {
@@ -164,20 +158,15 @@ const CountryForm = ({ isOpen, onClose, countryId, refetch }) => {
           <>
             <label className="text-sm font-medium">Status *</label>
 
-            <Select
+            <GroupButton
+              className="w-fit"
               value={data.country_status}
-              onValueChange={(value) =>
-                setData({ ...data, country_status: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setData({ ...data, country_status: value })}
+              options={[
+                { label: "Active", value: "Active" },
+                { label: "Inactive", value: "Inactive" },
+              ]}
+            />
           </>
         )}
 
