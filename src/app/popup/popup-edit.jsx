@@ -1,3 +1,4 @@
+import { GroupButton } from "@/components/group-button";
 import ImageUpload from "@/components/image-upload/image-upload";
 import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
@@ -8,13 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { POPUP_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/use-mutation";
@@ -67,6 +61,7 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
         const imagepath = res?.data?.popup_image
           ? `${imageBaseUrl}${res?.data?.popup_image}`
           : noImageUrl;
+        console.log(imagepath, "imagepath");
         setPreview({
           popup_image: imagepath,
         });
@@ -202,19 +197,16 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Required *</label>
-            <Select
+            <label className="text-sm font-medium mr-3">Required *</label>
+
+            <GroupButton
               value={data.required}
-              onValueChange={(value) => setData({ ...data, required: value })}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Yes">Yes</SelectItem>
-                <SelectItem value="No">No</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setData({ ...data, required: value })}
+              options={[
+                { label: "Yes", value: "Yes" },
+                { label: "No", value: "No" },
+              ]}
+            />
           </div>
         </div>
 

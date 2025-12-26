@@ -1,4 +1,8 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
+import { GroupButton } from "@/components/group-button";
+import ImageUpload from "@/components/image-upload/image-upload";
+import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,8 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { COMPANY_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
+import { getNoImageUrl } from "@/utils/imageUtils";
 import { useQueryClient } from "@tanstack/react-query";
-import { Building2, Loader2, Upload, X } from "lucide-react";
+import { Building2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -24,13 +29,25 @@ const EditCompany = () => {
     student_company_name: "",
     student_company_image_alt: "",
     student_company_status: "Active",
+    student_company_image: null,
   });
 
   const [errors, setErrors] = useState({});
-  const [previewImage, setPreviewImage] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [existingImage, setExistingImage] = useState(null);
-
+  const [preview, setPreview] = useState({
+    student_company_image: "",
+  });
+  const handleImageChange = (fieldName, file) => {
+    if (file) {
+      setFormData({ ...formData, [fieldName]: file });
+      const url = URL.createObjectURL(file);
+      setPreview({ ...preview, [fieldName]: url });
+      setErrors({ ...errors, [fieldName]: "" });
+    }
+  };
+  const handleRemoveImage = (fieldName) => {
+    setFormData({ ...formData, [fieldName]: null });
+    setPreview({ ...preview, [fieldName]: "" });
+  };
   const {
     data: companyData,
     isLoading,
@@ -56,9 +73,11 @@ const EditCompany = () => {
           companyData?.image_url,
           IMAGE_FOR
         );
+        const noImageUrl = getNoImageUrl(companyData?.image_url);
         const imageUrl = `${companyBaseUrl}${data.student_company_image}`;
-        setExistingImage(imageUrl);
-        setPreviewImage(imageUrl);
+        setPreview({
+          student_company_image: imageUrl,
+        });
       }
     }
   }, [companyData]);
@@ -103,60 +122,13 @@ const EditCompany = () => {
       newErrors.student_company_image_alt = "Image alt text is required";
       isValid = false;
     }
-    if (!previewImage && !selectedFile) {
+    if (!preview.student_company_image && !formData.student_company_image) {
       newErrors.student_company_image = "Company image is required";
       isValid = false;
     }
 
     setErrors(newErrors);
     return isValid;
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const newErrors = [];
-
-    if (file.type !== "image/webp") {
-      newErrors.push("The image must be in WEBP format only.");
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      newErrors.push("Image must be less than 5MB.");
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        if (img.width !== 150 || img.height !== 150) {
-          newErrors.push("The image size must be exactly 150x150 pixels.");
-        }
-
-        if (newErrors.length > 0) {
-          setErrors((prev) => ({
-            ...prev,
-            student_company_image: newErrors.join(" \n "),
-          }));
-          setSelectedFile(null);
-          setPreviewImage(null);
-        } else {
-          setSelectedFile(file);
-          setPreviewImage(reader.result);
-          setExistingImage(null);
-          setErrors((prev) => ({ ...prev, student_company_image: "" }));
-        }
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewImage(null);
-    setExistingImage(null);
   };
 
   const handleSubmit = async (e) => {
@@ -179,11 +151,12 @@ const EditCompany = () => {
       formData.student_company_status
     );
 
-    if (selectedFile) {
-      formDataObj.append("student_company_image", selectedFile);
+    if (formData.student_company_image instanceof File) {
+      formDataObj.append(
+        "student_company_image",
+        formData.student_company_image
+      );
     }
-
-    const loadingToast = toast.loading("Updating company...");
     try {
       const res = await trigger({
         url: COMPANY_API.updateById(id),
@@ -195,19 +168,14 @@ const EditCompany = () => {
       });
 
       if (res?.code === 200) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Company updated successfully");
-
         queryClient.invalidateQueries(["company-list"]);
         queryClient.invalidateQueries(["company-edit", id]);
         navigate("/company-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to update company");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
-
       const errors = error?.response?.data?.msg;
       toast.error(errors || "Something went wrong");
 
@@ -216,22 +184,11 @@ const EditCompany = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   if (isError) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-red-500">Error loading company data</p>
-        <Button onClick={refetch} variant="outline" className="mt-4">
-          Retry
-        </Button>
-      </div>
-    );
+    return <ApiErrorPage onRetry={() => refetch()} />;
   }
 
   return (
@@ -323,118 +280,52 @@ const EditCompany = () => {
                 )}
               </div>
             </div>
+            <div>
+              <ImageUpload
+                id="student_company_image"
+                label="Company Image"
+                required
+                selectedFile={formData.student_company_image}
+                previewImage={preview.student_company_image}
+                onFileChange={(e) =>
+                  handleImageChange(
+                    "student_company_image",
+                    e.target.files?.[0]
+                  )
+                }
+                onRemove={() => handleRemoveImage("student_company_image")}
+                error={errors.student_company_image}
+                format="WEBP"
+                allowedExtensions={["webp"]}
+                dimensions="150x150"
+                maxSize={5}
+                requiredDimensions={[150, 150]}
+              />
+            </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center h-full ml-4">
+              <div className="flex flex-col gap-1.5">
                 <Label
                   htmlFor="student_company_status"
                   className="text-sm font-medium"
                 >
                   Status
                 </Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">
-                    {formData.student_company_status === "Active"
-                      ? "Active"
-                      : "Inactive"}
-                  </span>
-                  <Switch
-                    checked={formData.student_company_status === "Active"}
-                    onCheckedChange={handleStatusChange}
-                  />
-                </div>
+
+                <GroupButton
+                  value={formData.student_company_status}
+                  onChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      student_company_status: value,
+                    })
+                  }
+                  options={[
+                    { label: "Active", value: "Active" },
+                    { label: "Inactive", value: "Inactive" },
+                  ]}
+                />
               </div>
-              <p className="text-xs text-gray-500">
-                Toggle to change company status between Active and Inactive
-              </p>
-            </div>
-
-            <div className="space-y-2 col-span-2">
-              <Label
-                htmlFor="student_company_image"
-                className="text-sm font-medium"
-              >
-                Company Image *
-                <span className="text-xs text-gray-500 ml-2">
-                  {existingImage && !selectedFile
-                    ? "(Current image will be kept)"
-                    : ""}
-                </span>
-              </Label>
-
-              {previewImage ? (
-                <div className="border-2 border-gray-300 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-12 h-12 rounded overflow-hidden bg-gray-100">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium truncate max-w-xs">
-                          {selectedFile ? selectedFile.name : "Current Image"}
-                        </p>
-                        {selectedFile && (
-                          <p className="text-xs text-gray-500">
-                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        )}
-                        {existingImage && !selectedFile && (
-                          <p className="text-xs text-blue-500">
-                            Click upload to change this image
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                  <Input
-                    id="student_company_image"
-                    name="student_company_image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  <Label
-                    htmlFor="student_company_image"
-                    className="cursor-pointer"
-                  >
-                    <div className="flex flex-col items-center gap-2">
-                      <Upload className="h-8 w-8 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium">
-                          {existingImage
-                            ? "Click to change company image"
-                            : "Click to upload company image"}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          WEBP format only, must be 150x150 pixels, up to 5MB
-                        </p>
-                      </div>
-                    </div>
-                  </Label>
-                </div>
-              )}
-
-              {errors.student_company_image && (
-                <p className="text-sm text-red-500 whitespace-pre-line">
-                  {errors.student_company_image}
-                </p>
-              )}
             </div>
           </form>
         </CardContent>

@@ -312,20 +312,17 @@ const NAVIGATION_CONFIG = {
 const USER_ROLE_PERMISSIONS = {
   1: {
     navMain: [
-      // "DASHBOARD",
-      // "POPUPLIST",
-      // "BANNERLIST",
+      "POPUPLIST",
+      "BANNERLIST",
       "COMPANYLIST",
       "COUNTRYLIST",
-      // "LETUREYOUTUBELIST",
+      "LETUREYOUTUBELIST",
       "STUDENTLIST",
-      // "NEWSLETTERLIST",
-      // "FAQLIST",
-      
-      // "FAQLIST",
+      "NEWSLETTERLIST",
+      "FAQLIST",
       "GALLERYLIST",
       "BLOGLIST",
-      // "SETTINGS",
+      "SETTINGS",
     ],
     navMainReport: ["SUMMARY", "DOWNLOADS", "OTHER", "SETTINGS"],
   },

@@ -17,7 +17,6 @@ export function useApiMutation() {
     setError(null);
     try {
       const response = await apiClient({
-        // url: `${BASE_URL}${url}`,
         url: `${url}`,
         method,
         data,
@@ -25,7 +24,6 @@ export function useApiMutation() {
         responseType,
         headers: {
           ...headers,
-          // ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
       if (responseType == "blob") {

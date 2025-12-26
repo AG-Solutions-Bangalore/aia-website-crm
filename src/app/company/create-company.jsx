@@ -1,4 +1,5 @@
 import PageHeader from "@/components/common/page-header";
+import ImageUpload from "@/components/image-upload/image-upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,11 +20,14 @@ const CreateCompany = () => {
   const [formData, setFormData] = useState({
     student_company_name: "",
     student_company_image_alt: "",
+    student_company_image: null,
   });
 
   const [errors, setErrors] = useState({});
-  const [previewImage, setPreviewImage] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+
+  const [preview, setPreview] = useState({
+    student_company_image: "",
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -39,7 +43,18 @@ const CreateCompany = () => {
       }));
     }
   };
-
+  const handleImageChange = (fieldName, file) => {
+    if (file) {
+      setFormData({ ...formData, [fieldName]: file });
+      const url = URL.createObjectURL(file);
+      setPreview({ ...preview, [fieldName]: url });
+      setErrors({ ...errors, [fieldName]: "" });
+    }
+  };
+  const handleRemoveImage = (fieldName) => {
+    setFormData({ ...formData, [fieldName]: null });
+    setPreview({ ...preview, [fieldName]: "" });
+  };
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
@@ -54,58 +69,12 @@ const CreateCompany = () => {
       isValid = false;
     }
 
-    if (!selectedFile) {
+    if (!preview.student_company_image && !formData.student_company_image) {
       newErrors.student_company_image = "Company image is required";
       isValid = false;
     }
-
     setErrors(newErrors);
     return isValid;
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const newErrors = [];
-
-    if (file.type !== "image/webp") {
-      newErrors.push("The image must be in WEBP format only.");
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      newErrors.push("Image must be less than 5MB.");
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        if (img.width !== 150 || img.height !== 150) {
-          newErrors.push("The image size must be exactly 150x150 pixels.");
-        }
-
-        if (newErrors.length > 0) {
-          setErrors((prev) => ({
-            ...prev,
-            student_company_image: newErrors.join(" \n "),
-          }));
-          setSelectedFile(null);
-          setPreviewImage(null);
-        } else {
-          setSelectedFile(file);
-          setPreviewImage(reader.result);
-          setErrors((prev) => ({ ...prev, student_company_image: "" }));
-        }
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewImage(null);
   };
 
   const handleSubmit = async (e) => {
@@ -123,9 +92,12 @@ const CreateCompany = () => {
       "student_company_image_alt",
       formData.student_company_image_alt
     );
-    formDataObj.append("student_company_image", selectedFile);
-
-    const loadingToast = toast.loading("Creating company...");
+    if (formData.student_company_image instanceof File) {
+      formDataObj.append(
+        "student_company_image",
+        formData.student_company_image
+      );
+    }
     try {
       const res = await trigger({
         url: COMPANY_API.create,
@@ -137,28 +109,20 @@ const CreateCompany = () => {
       });
 
       if (res?.code === 201) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Company created successfully");
-
         setFormData({
           student_company_name: "",
           student_company_image_alt: "",
         });
-        setSelectedFile(null);
-        setPreviewImage(null);
         setErrors({});
-
         const fileInput = document.getElementById("student_company_image");
         if (fileInput) fileInput.value = "";
         queryClient.invalidateQueries(["company-list"]);
         navigate("/company-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to create company");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
-
       const errors = error?.response?.data?.msg;
       toast.error(errors);
     }
@@ -256,77 +220,26 @@ const CreateCompany = () => {
             </div>
 
             <div className="space-y-2 col-span-2">
-              <Label
-                htmlFor="student_company_image"
-                className="text-sm font-medium"
-              >
-                Company Image *
-              </Label>
-
-              {selectedFile ? (
-                <div className="border-2 border-gray-300 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-12 h-12 rounded overflow-hidden bg-gray-100">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium truncate max-w-xs">
-                          {selectedFile.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                  <Input
-                    id="student_company_image"
-                    name="student_company_image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  <Label
-                    htmlFor="student_company_image"
-                    className="cursor-pointer"
-                  >
-                    <div className="flex flex-col items-center gap-2">
-                      <Upload className="h-8 w-8 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium">
-                          Click to upload company image
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          WEBP format only, must be 150x150 pixels, up to 5MB
-                        </p>
-                      </div>
-                    </div>
-                  </Label>
-                </div>
-              )}
-
-              {errors.student_company_image && (
-                <p className="text-sm text-red-500 whitespace-pre-line">
-                  {errors.student_company_image}
-                </p>
-              )}
+              <ImageUpload
+                id="student_company_image"
+                label="Company Image"
+                required
+                selectedFile={formData.student_company_image}
+                previewImage={preview.student_company_image}
+                onFileChange={(e) =>
+                  handleImageChange(
+                    "student_company_image",
+                    e.target.files?.[0]
+                  )
+                }
+                onRemove={() => handleRemoveImage("student_company_image")}
+                error={errors.student_company_image}
+                format="WEBP"
+                allowedExtensions={["webp"]}
+                dimensions="150x150"
+                maxSize={5}
+                requiredDimensions={[150, 150]}
+              />
             </div>
           </form>
         </CardContent>

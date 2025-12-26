@@ -1,21 +1,19 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
+import { GroupButton } from "@/components/group-button";
+import ImageUpload from "@/components/image-upload/image-upload";
+import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { BANNER_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
+import { getNoImageUrl } from "@/utils/imageUtils";
 import { useQueryClient } from "@tanstack/react-query";
-import { Image, Loader2, Upload, X } from "lucide-react";
+import { Image, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -32,12 +30,13 @@ const EditBanner = () => {
     banner_link: "",
     banner_image_alt: "",
     banner_status: "Active",
+    banner_image: null,
   });
 
   const [errors, setErrors] = useState({});
-  const [previewImage, setPreviewImage] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [existingImage, setExistingImage] = useState(null);
+  const [preview, setPreview] = useState({
+    banner_image: "",
+  });
 
   const {
     data: bannerData,
@@ -63,9 +62,13 @@ const EditBanner = () => {
       if (data.banner_image) {
         const IMAGE_FOR = "Banner";
         const bannerBaseUrl = getImageBaseUrl(bannerData?.image_url, IMAGE_FOR);
-        const imageUrl = `${bannerBaseUrl}${data.banner_image}`;
-        setExistingImage(imageUrl);
-        setPreviewImage(imageUrl);
+        const noImageUrl = getNoImageUrl(bannerData?.image_url);
+        const imagepath = bannerData?.data?.banner_image
+          ? `${bannerBaseUrl}${bannerData?.data?.banner_image}`
+          : noImageUrl;
+        setPreview({
+          banner_image: imagepath,
+        });
       }
     }
   }, [bannerData]);
@@ -90,13 +93,6 @@ const EditBanner = () => {
     }
   };
 
-  const handleStatusChange = (checked) => {
-    setFormData((prev) => ({
-      ...prev,
-      banner_status: checked ? "Active" : "Inactive",
-    }));
-  };
-
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
@@ -117,12 +113,9 @@ const EditBanner = () => {
     if (!formData.banner_image_alt.trim()) {
       newErrors.banner_image_alt = "Alt text is required";
       isValid = false;
-    } else if (formData.banner_image_alt.length > 100) {
-      newErrors.banner_image_alt = "Alt text must be less than 100 characters";
-      isValid = false;
     }
 
-    if (!previewImage && !selectedFile) {
+    if (!preview.banner_image && !formData.banner_image) {
       newErrors.banner_image = "Banner image is required";
       isValid = false;
     }
@@ -139,52 +132,17 @@ const EditBanner = () => {
       return false;
     }
   };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const newErrors = [];
-
-    if (file.type !== "image/webp") {
-      newErrors.push("The image must be in WEBP format only.");
+  const handleImageChange = (fieldName, file) => {
+    if (file) {
+      setFormData({ ...formData, [fieldName]: file });
+      const url = URL.createObjectURL(file);
+      setPreview({ ...preview, [fieldName]: url });
+      setErrors({ ...errors, [fieldName]: "" });
     }
-
-    if (file.size > 5 * 1024 * 1024) {
-      newErrors.push("Image must be less than 5MB.");
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        if (img.width !== 1920 || img.height !== 858) {
-          newErrors.push("The image size must be exactly 1920x858 pixels.");
-        }
-
-        if (newErrors.length > 0) {
-          setErrors((prev) => ({
-            ...prev,
-            banner_image: newErrors.join(" \n "),
-          }));
-          setSelectedFile(null);
-          setPreviewImage(null);
-        } else {
-          setSelectedFile(file);
-          setPreviewImage(reader.result);
-          setExistingImage(null);
-          setErrors((prev) => ({ ...prev, banner_image: "" }));
-        }
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
   };
-
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewImage(null);
-    setExistingImage(null);
+  const handleRemoveImage = (fieldName) => {
+    setFormData({ ...formData, [fieldName]: null });
+    setPreview({ ...preview, [fieldName]: "" });
   };
 
   const handleSubmit = async (e) => {
@@ -203,11 +161,10 @@ const EditBanner = () => {
     formDataObj.append("banner_image_alt", formData.banner_image_alt);
     formDataObj.append("banner_status", formData.banner_status);
 
-    if (selectedFile) {
-      formDataObj.append("banner_image", selectedFile);
+    if (formData.banner_image instanceof File) {
+      formDataObj.append("banner_image", formData.banner_image);
     }
 
-    const loadingToast = toast.loading("Updating banner...");
     try {
       const res = await trigger({
         url: BANNER_API.updateById(id),
@@ -219,18 +176,15 @@ const EditBanner = () => {
       });
 
       if (res?.code === 200) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Banner updated successfully");
 
         queryClient.invalidateQueries(["banner-list"]);
         queryClient.invalidateQueries(["banner-edit", id]);
         navigate("/banner-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to update banner");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
 
       const errors = error?.response?.data?.msg;
       toast.error(errors || "Something went wrong");
@@ -239,27 +193,11 @@ const EditBanner = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-red-500">Error loading banner data</p>
-        <Button onClick={refetch} variant="outline" className="mt-4">
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
+  if (isError) return <ApiErrorPage onRetry={refetch} />;
   return (
     <div className="max-w-full mx-auto">
+      {isLoading && <LoadingBar />}
+
       <PageHeader
         icon={Image}
         title="Edit Banner"
@@ -370,107 +308,46 @@ const EditBanner = () => {
                 )}
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="banner_image" className="text-sm font-medium">
-                Banner Image *
-                <span className="text-xs text-gray-500 ml-2">
-                  {existingImage && !selectedFile
-                    ? "(Current image will be kept)"
-                    : ""}
-                </span>
-              </Label>
-
-              {previewImage ? (
-                <div className="border-2 border-gray-300 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-12 h-12 rounded overflow-hidden bg-gray-100">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium truncate max-w-xs">
-                          {selectedFile ? selectedFile.name : "Current Image"}
-                        </p>
-                        {selectedFile && (
-                          <p className="text-xs text-gray-500">
-                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        )}
-                        {existingImage && !selectedFile && (
-                          <p className="text-xs text-blue-500">
-                            Click upload to change this image
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                  <Input
-                    id="banner_image"
-                    name="banner_image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  <Label htmlFor="banner_image" className="cursor-pointer">
-                    <div className="flex flex-col items-center gap-2">
-                      <Upload className="h-8 w-8 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium">
-                          {existingImage
-                            ? "Click to change banner image"
-                            : "Click to upload banner image"}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          WEBP format only, must be 1920x858 pixels, up to 5MB
-                        </p>
-                      </div>
-                    </div>
-                  </Label>
-                </div>
-              )}
-
-              {errors.banner_image && (
-                <p className="text-sm text-red-500 whitespace-pre-line">
-                  {errors.banner_image}
-                </p>
-              )}
+            <div className="">
+              <ImageUpload
+                id="banner_image"
+                label="Banner Image"
+                required
+                selectedFile={formData.banner_image}
+                previewImage={preview.banner_image}
+                onFileChange={(e) =>
+                  handleImageChange("banner_image", e.target.files?.[0])
+                }
+                onRemove={() => handleRemoveImage("banner_image")}
+                error={errors.banner_image}
+                format="WEBP"
+                allowedExtensions={["webp"]}
+                dimensions="1920x858"
+                maxSize={5}
+                requiredDimensions={[1920, 858]}
+              />
             </div>
-            <div className="space-y-2">
-              <div>
-                <Label htmlFor="banner_status" className="text-sm font-medium">
+
+            <div className="flex items-center h-full ml-4">
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="banner_status"
+                  className="text-sm text-muted-foreground"
+                >
                   Status
                 </Label>
 
-                <Select
+                <GroupButton
+                  className="w-fit"
                   value={formData.banner_status}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, banner_status: v })
+                  onChange={(value) =>
+                    setFormData({ ...formData, banner_status: value })
                   }
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                  options={[
+                    { label: "Active", value: "Active" },
+                    { label: "Inactive", value: "Inactive" },
+                  ]}
+                />
               </div>
             </div>
           </form>

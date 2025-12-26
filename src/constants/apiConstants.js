@@ -53,7 +53,7 @@ export const PAGE_TWO_API = {
 };
 export const CHANGE_PASSWORD_API = {
   create: "/panel-change-password",
-}
+};
 export const COUNTRY_API = {
   list: "/country",
   dropdown: "/countrys",
@@ -68,6 +68,11 @@ export const LETUREYOUTUBE_API = {
 
 export const COURSE_API = {
   courses: "/courses",
+};
+export const GALLERYAPI = {
+  gallery: "/link-gallery",
+  byId: (id) => `/link-gallery/${id}`,
+  updateById: (id) => `/link-gallery/${id}?_method=PUT`,
 };
 export const YOUTUBEFOR_API = {
   list: "/youtubeFor",
