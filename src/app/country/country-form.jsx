@@ -95,7 +95,7 @@ const CountryForm = ({ isOpen, onClose, countryId }) => {
         toast.success(res?.msg || "Saved successfully");
         onClose();
 
-        queryClient.invalidateQueries({ queryKey: ["company-list"] });
+        queryClient.invalidateQueries({ queryKey: ["countrylist"] });
         queryClient.invalidateQueries({ queryKey: ["countries-dropdown"] });
       } else {
         toast.error(res?.msg || "Failed to update country");

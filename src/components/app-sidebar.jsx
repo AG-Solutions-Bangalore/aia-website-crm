@@ -92,7 +92,7 @@ const NAVIGATION_CONFIG = {
       isActive: false,
     },
     GALLERYLIST: {
-      title: "Gallery",
+      title: "Link Gallery",
       url: "/gallery-list",
       icon: Frame,
       isActive: false,
