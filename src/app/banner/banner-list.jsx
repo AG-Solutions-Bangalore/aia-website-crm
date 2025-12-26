@@ -1,18 +1,11 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import DataTable from "@/components/common/data-table";
 import ImageCell from "@/components/common/ImageCell";
 import LoadingBar from "@/components/loader/loading-bar";
-import ApiErrorPage from "@/components/api-error/api-error";
 import { BANNER_API } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
-import { Edit, MoreVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Edit } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const BannerList = () => {
@@ -63,11 +56,13 @@ const BannerList = () => {
       header: "Status",
       accessorKey: "banner_status",
       cell: ({ row }) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          row.original.banner_status === "Active" 
-            ? "bg-green-100 text-green-800" 
-            : "bg-red-100 text-red-800"
-        }`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            row.original.banner_status === "Active"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
           {row.original.banner_status}
         </span>
       ),
@@ -76,11 +71,14 @@ const BannerList = () => {
       header: "Actions",
       accessorKey: "actions",
       cell: ({ row }) => (
-        <div >
-            <Link title="banner edit" to={`/edit-banner/${row.original.id}`} className="cursor-pointer">
-                         <Edit className=" h-4 w-4 hover:text-blue-600" />
-                    
-                       </Link>
+        <div>
+          <Link
+            title="banner edit"
+            to={`/edit-banner/${row.original.id}`}
+            className="cursor-pointer"
+          >
+            <Edit className=" h-4 w-4 hover:text-blue-600" />
+          </Link>
         </div>
       ),
     },
@@ -89,18 +87,16 @@ const BannerList = () => {
   if (isError) return <ApiErrorPage onRetry={refetch} />;
   return (
     <>
-    
       <DataTable
         data={data?.data || []}
         columns={columns}
         pageSize={10}
         searchPlaceholder="Search banners..."
         addButton={{
-          to: '/add-banner', 
-          label: 'Add Banner' 
+          to: "/add-banner",
+          label: "Add Banner",
         }}
       />
-    
     </>
   );
 };

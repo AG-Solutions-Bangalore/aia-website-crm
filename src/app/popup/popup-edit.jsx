@@ -61,6 +61,7 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
         const imagepath = res?.data?.popup_image
           ? `${imageBaseUrl}${res?.data?.popup_image}`
           : noImageUrl;
+        console.log(imagepath, "imagepath");
         setPreview({
           popup_image: imagepath,
         });

@@ -266,12 +266,7 @@ const StudentForm = () => {
     }
   };
 
-  if (fetchError)
-    return (
-      <ApiErrorPage
-        onRetry={() => fetchData()}
-      />
-    );
+  if (fetchError) return <ApiErrorPage onRetry={() => fetchData()} />;
 
   return (
     <div className="mx-6 space-y-6">

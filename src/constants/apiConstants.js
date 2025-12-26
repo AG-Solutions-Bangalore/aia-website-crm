@@ -71,6 +71,8 @@ export const COURSE_API = {
 };
 export const GALLERYAPI = {
   gallery: "/link-gallery",
+  byId: (id) => `/link-gallery/${id}`,
+  updateById: (id) => `/link-gallery/${id}?_method=PUT`,
 };
 export const YOUTUBEFOR_API = {
   list: "/youtubeFor",
