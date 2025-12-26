@@ -2,8 +2,8 @@ import ApiErrorPage from "@/components/api-error/api-error";
 import BlogPreview from "@/components/blog-preview/blog-preview";
 import MemoizedSelect from "@/components/common/memoized-select";
 import PageHeader from "@/components/common/page-header";
+import ImageUpload from "@/components/image-upload/image-upload";
 import LoadingBar from "@/components/loader/loading-bar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +24,6 @@ import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { CKEditor } from "ckeditor4-react";
 import {
-  AlertCircle,
   BookOpen,
   Calendar,
   Eye,
@@ -63,17 +62,14 @@ const CreateBlog = () => {
       blog_sub_description: "",
     },
   ]);
-
+  console.log(blogSubs, "blogSubs");
   const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
-  console.log(selectedRelatedBlogs, "selectedRelatedBlogs");
   const [errors, setErrors] = useState({});
   const [subErrors, setSubErrors] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [imageDimensions, setImageDimensions] = useState({
-    width: 0,
-    height: 0,
+  const [preview, setPreview] = useState({
+    blog_images: null,
   });
 
   const {
@@ -114,17 +110,14 @@ const CreateBlog = () => {
     if (option) {
       setSelectedGalleryImage(option);
 
-      // Copy URL to clipboard
-
       try {
         await navigator.clipboard.writeText(option.value);
         toast.success(`Image URL copied: ${option.image}`);
       } catch (error) {
         toast.error("Failed to copy URL");
       }
-
-      // Set preview image
-      setPreviewImage(option.value);
+      console.log(option.value, "option.value");
+      setPreview(option.value);
     } else {
       setSelectedGalleryImage(null);
     }
@@ -198,53 +191,18 @@ const CreateBlog = () => {
     setSubErrors(updatedErrors);
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const newErrors = [];
-
-    if (file.type !== "image/webp") {
-      newErrors.push("The image must be in WEBP format only.");
+  const handleImageChange = (fieldName, file) => {
+    if (file) {
+      setFormData({ ...formData, [fieldName]: file });
+      const url = URL.createObjectURL(file);
+      setPreview({ ...preview, [fieldName]: url });
+      setErrors({ ...errors, [fieldName]: "" });
     }
-
-    if (file.size > 5 * 1024 * 1024) {
-      newErrors.push("Image must be less than 5MB.");
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new window.Image();
-      img.onload = () => {
-        if (img.width !== 1400 || img.height !== 450) {
-          newErrors.push("The image size must be exactly 1400×450 pixels.");
-        }
-
-        setImageDimensions({ width: img.width, height: img.height });
-
-        if (newErrors.length > 0) {
-          setErrors((prev) => ({
-            ...prev,
-            blog_images: newErrors.join(" \n "),
-          }));
-          setSelectedFile(null);
-          setPreviewImage(null);
-          setImageDimensions({ width: 0, height: 0 });
-        } else {
-          setSelectedFile(file);
-          setPreviewImage(reader.result);
-          setErrors((prev) => ({ ...prev, blog_images: "" }));
-        }
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
   };
 
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewImage(null);
-    setImageDimensions({ width: 0, height: 0 });
+  const handleRemoveImage = (fieldName) => {
+    setFormData({ ...formData, [fieldName]: null });
+    setPreview({ ...preview, [fieldName]: "" });
   };
 
   const validateForm = () => {
@@ -279,20 +237,10 @@ const CreateBlog = () => {
       newErrors.blog_created = "Blog date is required";
       isValid = false;
     }
-
+    if (!preview.blog_images && !formData.blog_images)
+      newErrors.blog_images = "Blog Image is required";
     if (!formData.blog_images_alt.trim()) {
       newErrors.blog_images_alt = "Image alt text is required";
-      isValid = false;
-    }
-
-    if (!selectedFile) {
-      newErrors.blog_images = "Blog image is required";
-      isValid = false;
-    } else if (
-      imageDimensions.width !== 1400 ||
-      imageDimensions.height !== 450
-    ) {
-      newErrors.blog_images = `Image dimensions must be exactly 1400×450 pixels. Current: ${imageDimensions.width}×${imageDimensions.height}`;
       isValid = false;
     }
 
@@ -333,7 +281,8 @@ const CreateBlog = () => {
     formDataObj.append("blog_created", formData.blog_created);
     formDataObj.append("blog_images_alt", formData.blog_images_alt);
     formDataObj.append("blog_images", selectedFile);
-
+    if (data.blog_images instanceof File)
+      formData.append("blog_images", data.blog_images);
     blogSubs.forEach((sub, index) => {
       formDataObj.append(
         `sub[${index}][blog_sub_heading]`,
@@ -387,9 +336,8 @@ const CreateBlog = () => {
       },
     ]);
     setSelectedRelatedBlogs([]);
-    setSelectedFile(null);
     setPreviewImage(null);
-    setImageDimensions({ width: 0, height: 0 });
+    setPreview(null);
     setErrors({});
     setSubErrors([]);
     const fileInput = document.getElementById("blog_images");
@@ -623,89 +571,23 @@ const CreateBlog = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="flex items-center gap-2 text-sm">
-                        <ImageIcon className="h-4 w-4" />
-                        Blog Image *
-                      </Label>
-
-                      <Alert className="py-2 px-3 bg-blue-50 border-blue-200">
-                        <AlertDescription className="text-xs text-blue-700">
-                          WEBP • 1400×450 • Max 5MB
-                        </AlertDescription>
-                      </Alert>
-
-                      {selectedFile ? (
-                        <div className="border border-dashed rounded-md p-3">
-                          <div className="relative aspect-[1400/450] bg-gray-100 rounded overflow-hidden">
-                            <img
-                              src={previewImage}
-                              alt="Preview"
-                              className="w-full h-full object-contain"
-                            />
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="destructive"
-                              onClick={handleRemoveImage}
-                              className="absolute top-1 right-1 h-6 w-6"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-
-                          <div className="mt-2 text-xs flex items-center gap-3 text-center text-gray-600">
-                            <p className="truncate font-medium">
-                              {selectedFile.name}
-                            </p>
-                            <p>
-                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                            {imageDimensions.width > 0 && (
-                              <p
-                                className={
-                                  imageDimensions.width === 1400 &&
-                                  imageDimensions.height === 450
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                                }
-                              >
-                                {imageDimensions.width}×{imageDimensions.height}
-                                px
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="border border-dashed rounded-md p-4 text-center hover:border-blue-400 transition">
-                          <Input
-                            id="blog_images"
-                            type="file"
-                            accept=".webp,image/webp"
-                            onChange={handleImageChange}
-                            className="hidden"
-                          />
-                          <Label
-                            htmlFor="blog_images"
-                            className="cursor-pointer"
-                          >
-                            <div className="flex flex-col items-center gap-2">
-                              <ImageIcon className="h-8 w-8 text-blue-500" />
-                              <p className="text-sm font-medium">
-                                Upload Image
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                Click or drag & drop
-                              </p>
-                            </div>
-                          </Label>
-                        </div>
-                      )}
-
-                      {errors.blog_images && (
-                        <p className="text-xs text-red-500 text-center">
-                          {errors.blog_images}
-                        </p>
-                      )}
+                      <ImageUpload
+                        id="blog_images"
+                        label="Blog Image"
+                        required
+                        selectedFile={formData.blog_images}
+                        previewImage={preview.blog_images}
+                        onFileChange={(e) =>
+                          handleImageChange("blog_images", e.target.files?.[0])
+                        }
+                        onRemove={() => handleRemoveImage("blog_images")}
+                        error={errors.blog_images}
+                        format="WEBP"
+                        allowedExtensions={["webp"]}
+                        dimensions="1400x450"
+                        maxSize={5}
+                        requiredDimensions={[1400, 450]}
+                      />
                     </div>
                   </div>
                 </TabsContent>
@@ -953,14 +835,12 @@ const CreateBlog = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-semibold">Live Preview</h3>
-
-                    {previewImage && (
+                    {preview?.blog_images && (
                       <BlogPreview
                         formData={formData}
                         blogSubs={blogSubs}
                         selectedRelatedBlogs={selectedRelatedBlogs}
-                        previewImage={previewImage}
-                        imageDimensions={imageDimensions}
+                        previewImage={preview?.blog_images}
                       />
                     )}
                   </div>
@@ -972,23 +852,11 @@ const CreateBlog = () => {
                 <div className="space-y-4">
                   <div className="border rounded-lg overflow-hidden shadow-sm">
                     <div className="relative aspect-[1400/450] bg-gray-100 overflow-hidden">
-                      {previewImage ? (
+                      {preview?.blog_images ? (
                         <img
-                          src={previewImage}
+                          src={preview?.blog_images}
                           alt={formData.blog_images_alt || "Blog image"}
                           className="w-full h-full object-cover"
-                          style={{
-                            objectFit:
-                              imageDimensions.width === 1400 &&
-                              imageDimensions.height === 450
-                                ? "cover"
-                                : "contain",
-                            backgroundColor:
-                              imageDimensions.width === 1400 &&
-                              imageDimensions.height === 450
-                                ? "transparent"
-                                : "#f3f4f6",
-                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-r from-gray-100 to-gray-200">
@@ -1008,7 +876,7 @@ const CreateBlog = () => {
                           </Badge>
                         </div>
                       )}
-                      {previewImage && imageDimensions.width > 0 && (
+                      {/* {previewImage && imageDimensions.width > 0 && (
                         <div className="absolute bottom-2 right-2">
                           <Badge
                             variant="outline"
@@ -1022,7 +890,7 @@ const CreateBlog = () => {
                             {imageDimensions.width}×{imageDimensions.height}
                           </Badge>
                         </div>
-                      )}
+                      )} */}
                     </div>
 
                     <div className="p-4">
@@ -1069,6 +937,39 @@ const CreateBlog = () => {
                     </div>
                   </div>
 
+                  {/* {previewImage && (
+                    <Alert
+                      className={`${
+                        imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450
+                          ? "bg-green-50 border-green-200"
+                          : "bg-yellow-50 border-yellow-200"
+                      }`}
+                    >
+                      <AlertCircle
+                        className={`h-4 w-4 ${
+                          imageDimensions.width === 1400 &&
+                          imageDimensions.height === 450
+                            ? "text-green-600"
+                            : "text-yellow-600"
+                        }`}
+                      />
+                      <AlertDescription className="text-sm">
+                        {imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450 ? (
+                          <span className="text-green-700">
+                            ✓ Image dimensions are correct
+                          </span>
+                        ) : (
+                          <span className="text-yellow-700">
+                            ⚠ Current: {imageDimensions.width}×
+                            {imageDimensions.height}. Required: 1400×450
+                          </span>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )} */}
+
                   {blogSubs.map((sub, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <h4 className="font-semibold text-gray-800 mb-2">
@@ -1107,7 +1008,6 @@ const CreateBlog = () => {
                       </div>
                     </div>
                   )}
-
                   <div className="grid grid-cols-4 gap-2 text-center">
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
@@ -1123,11 +1023,11 @@ const CreateBlog = () => {
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
-                        {selectedFile ? "✓" : "✗"}
+                        {preview?.blog_images ? "✓" : "✗"}
                       </p>
                       <p className="text-xs text-gray-500">Image</p>
                     </div>
-                    <div
+                    {/* <div
                       className={`p-3 rounded-lg ${
                         imageDimensions.width === 1400 &&
                         imageDimensions.height === 450
@@ -1146,7 +1046,7 @@ const CreateBlog = () => {
                           : "-"}
                       </p>
                       <p className="text-xs text-gray-500">Size</p>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </CardContent>

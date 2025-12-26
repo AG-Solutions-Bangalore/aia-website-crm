@@ -1,513 +1,1186 @@
-// import React, { useState } from "react";
-// import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight } from "lucide-react";
-// import { Button } from "../ui/button";
-// import api from "@/api";
-// import { Button } from "@/components/ui/button";
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { setCredentials } from "@/store/auth/authSlice";
-// import { setCompanyDetails } from "@/store/auth/companySlice";
-// import { motion } from "framer-motion";
-// import { Eye, EyeOff, LogIn } from "lucide-react";
-// import { useEffect, useRef, useState } from "react";
-// import { useDispatch } from "react-redux";
-// import { useNavigate } from "react-router-dom";
-// import { toast } from "sonner";
-// import "swiper/css";
-// import "swiper/css/autoplay";
-// import "swiper/css/effect-fade";
-// import { Autoplay, EffectFade } from "swiper/modules";
-// import { Swiper, SwiperSlide } from "swiper/react";
-// export default function AuthUI() {
-//   const [testimonialIndex, setTestimonialIndex] = useState(0);
-
-//   const testimonials = [
-//     {
-//       quote:
-//         "AIA provided me with comprehensive study material that helped me secure international certifications. The faculty guidance was invaluable!",
-//       author: "Mas Parjono",
-//       role: "Certified Auditor",
-//     },
-//     {
-//       quote:
-//         "With AIA's practical approach, I not only obtained certifications but learned real-world applications. Highly professional!",
-//       author: "Sarah Chen",
-//       role: "Internal Audit Manager",
-//     },
-//     {
-//       quote:
-//         "15 years of excellence in education. AIA truly helps you grow professionally!",
-//       author: "Alex Rodriguez",
-//       role: "Senior Compliance Officer",
-//     },
-//   ];
-
-//   const current = testimonials[testimonialIndex];
-
-//   const handleNextTestimonial = () => {
-//     setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
-//   };
-
-//   const handlePrevTestimonial = () => {
-//     setTestimonialIndex(
-//       (prev) => (prev - 1 + testimonials.length) % testimonials.length
-//     );
-//   };
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [loadingMessage, setLoadingMessage] = useState("");
-//   const navigate = useNavigate();
-//   const [isLoading, setIsLoading] = useState(false);
-//   const dispatch = useDispatch();
-//   const [showPassword, setShowPassword] = useState(false);
-//   const emailInputRef = useRef(null);
-//   const loadingMessages = [
-//     "Setting things up for you...",
-//     "Checking your credentials...",
-//     "Preparing your dashboard...",
-//     "Almost there...",
-//   ];
-
-//   useEffect(() => {
-//     if (emailInputRef.current) {
-//       emailInputRef.current.focus();
-//     }
-//   }, []);
-
-//   useEffect(() => {
-//     let messageIndex = 0;
-//     let intervalId;
-
-//     if (isLoading) {
-//       setLoadingMessage(loadingMessages[0]);
-//       intervalId = setInterval(() => {
-//         messageIndex = (messageIndex + 1) % loadingMessages.length;
-//         setLoadingMessage(loadingMessages[messageIndex]);
-//       }, 800);
-//     }
-
-//     return () => {
-//       if (intervalId) clearInterval(intervalId);
-//     };
-//   }, [isLoading]);
-
-//   const handleKeyPress = (event) => {
-//     if (event.key === "Enter" && !isLoading) {
-//       handleSubmit(event);
-//     }
-//   };
-
-//   const handleSubmit = async (event) => {
-//     event.preventDefault();
-
-//     if (!email.trim() || !password.trim()) {
-//       toast.error("Please enter both username and password.");
-//       return;
-//     }
-
-//     const formData = new FormData();
-//     formData.append("username", email);
-//     formData.append("password", password);
-//     setIsLoading(true);
-//     try {
-//       const res = await api.auth.login(formData);
-
-//       if (res?.data?.code === 200) {
-//         const { UserInfo, version, year } = res?.data;
-
-//         if (!UserInfo || !UserInfo.token) {
-//           toast.error("Login Failed: No token received.");
-//           return;
-//         }
-
-//         dispatch(
-//           setCredentials({
-//             token: UserInfo.token,
-//             user: UserInfo.user,
-//             version: version?.version_panel,
-//             currentYear: year?.current_year,
-//             tokenExpireAt: UserInfo.token_expires_at,
-//           })
-//         );
-//         dispatch(setCompanyDetails(res.company_details));
-
-//         navigate("/company-list", { replace: true });
-//       } else {
-//         toast.error(res.message || "Login Failed: Unexpected response.");
-//         setIsLoading(false);
-//       }
-//     } catch (error) {
-//       toast.error(error.response?.data?.message || error.message);
-//       setIsLoading(false);
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-//   return (
-//     <div
-//       className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-//       style={{
-//         background:
-//           "linear-gradient(135deg, #eff6ff 0%, #e0e7ff 50%, #ddd6fe 100%)",
-//       }}
-//     >
-//       {/* Subtle grid overlay */}
-//       <div
-//         className="absolute inset-0 opacity-5 pointer-events-none"
-//         style={{
-//           backgroundImage:
-//             "linear-gradient(0deg, transparent 24%, rgba(59,130,246,.05) 25%, rgba(59,130,246,.05) 26%, transparent 27%, transparent 74%, rgba(59,130,246,.05) 75%, rgba(59,130,246,.05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(59,130,246,.05) 25%, rgba(59,130,246,.05) 26%, transparent 27%, transparent 74%, rgba(59,130,246,.05) 75%, rgba(59,130,246,.05) 26%, transparent 77%, transparent)",
-//           backgroundSize: "50px 50px",
-//         }}
-//       ></div>
-
-//       {/* Main Auth Card */}
-//       <div className="backdrop-blur-md bg-white/80 rounded-2xl shadow-xl flex flex-col md:flex-row max-w-5xl w-full relative z-10 overflow-hidden">
-//         {/* Left Panel - Login Form */}
-//         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-//           {/* Logo */}
-//           <div className="flex items-center gap-1 mb-8">
-//             <img src="https://aia.in.net/crm/public/assets/images/logo/new_retina_logos.webp"></img>
-//           </div>
-
-//           {/* Heading */}
-//           <h1
-//             className="text-4xl font-bold mb-2"
-//             style={{ color: "hsl(213, 94%, 20%)" }}
-//           >
-//             Welcome back
-//           </h1>
-//           <p className="mb-8" style={{ color: "hsl(215, 20%, 60%)" }}>
-//             Continue your certification journey with AIA
-//           </p>
-
-//           <form onSubmit={handleSubmit} onKeyPress={handleKeyPress}>
-//             <div className="space-y-4 ">
-//               <div className="space-y-2">
-//                 <Label
-//                   htmlFor="email"
-//                   className="text-sm font-medium text-gray-700"
-//                 >
-//                   Username
-//                 </Label>
-//                 <motion.div
-//                   initial={{ opacity: 0, x: -20 }}
-//                   animate={{ opacity: 1, x: 0 }}
-//                   transition={{ delay: 0.2 }}
-//                 >
-//                   <Input
-//                     ref={emailInputRef}
-//                     id="email"
-//                     type="text"
-//                     placeholder="Enter your username"
-//                     value={email}
-//                     onChange={(e) => setEmail(e.target.value)}
-//                     minLength={1}
-//                     maxLength={50}
-//                     required
-//                     className="h-10 md:h-11 border-gray-300 focus:border-[var(--color-border)] focus:ring-[var(--color-border)] transition-colors"
-//                     autoComplete="username"
-//                   />
-//                 </motion.div>
-//               </div>
-
-//               <div className="space-y-2">
-//                 <Label
-//                   htmlFor="password"
-//                   className="text-sm font-medium text-gray-700"
-//                 >
-//                   Password
-//                 </Label>
-//                 <motion.div
-//                   initial={{ opacity: 0, x: 20 }}
-//                   animate={{ opacity: 1, x: 0 }}
-//                   transition={{ delay: 0.3 }}
-//                 >
-//                   <div className="relative">
-//                     <Input
-//                       id="password"
-//                       type={showPassword ? "text" : "password"}
-//                       placeholder="Enter your password"
-//                       value={password}
-//                       onChange={(e) => setPassword(e.target.value)}
-//                       required
-//                       minLength={1}
-//                       maxLength={16}
-//                       className="h-10 md:h-11 pr-10 border-gray-300 focus:border-[var(--color-border)] focus:ring-[var(--color-border)] transition-colors"
-//                       autoComplete="current-password"
-//                     />
-//                     <button
-//                       type="button"
-//                       onClick={() => setShowPassword((prev) => !prev)}
-//                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-//                       tabIndex={-1}
-//                     >
-//                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-//                     </button>
-//                   </div>
-//                 </motion.div>
-//               </div>
-
-//               <motion.div
-//                 initial={{ opacity: 0, y: 10 }}
-//                 animate={{ opacity: 1, y: 0 }}
-//                 transition={{ delay: 0.4 }}
-//               >
-//                 <Button
-//                   type="submit"
-//                   className="w-full h-10 md:h-11 bg-gradient-to-r from-[var(--team-color)] to-[var(--color-dark)] hover:opacity-90 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 text-sm md:text-base"
-//                   disabled={isLoading}
-//                 >
-//                   {isLoading ? (
-//                     <motion.span
-//                       key={loadingMessage}
-//                       initial={{ opacity: 0, y: 5 }}
-//                       animate={{ opacity: 1, y: 0 }}
-//                       exit={{ opacity: 0, y: -5 }}
-//                       className="text-sm"
-//                     >
-//                       {loadingMessage}
-//                     </motion.span>
-//                   ) : (
-//                     <span className="flex items-center justify-center gap-2">
-//                       <LogIn size={16} className="md:size-[18px]" />
-//                       Sign In
-//                     </span>
-//                   )}
-//                 </Button>
-//               </motion.div>
-//             </div>
-//           </form>
-//         </div>
-
-//         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600">
-//           <div className="absolute top-0 right-0 w-96 h-96 opacity-10 pointer-events-none">
-//             <svg viewBox="0 0 100 100" className="w-full h-full">
-//               {[...Array(12)].map((_, i) => (
-//                 <line
-//                   key={i}
-//                   x1="50"
-//                   y1="50"
-//                   x2="50"
-//                   y2="5"
-//                   stroke="#ffffff"
-//                   strokeWidth="1.5"
-//                   transform={`rotate(${i * 30} 50 50)`}
-//                 />
-//               ))}
-//             </svg>
-//           </div>
-
-//           {/* Testimonial Content */}
-//           <div className="relative z-10">
-//             <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
-//               What Our Professionals Say
-//             </h2>
-
-//             <div className="mb-8">
-//               <p className="text-4xl text-white/30 mb-4">"</p>
-//               <p className="text-white/95 leading-relaxed text-lg font-medium">
-//                 {current.quote}
-//               </p>
-//             </div>
-
-//             <div className="mb-8">
-//               <p className="text-white font-semibold text-lg">
-//                 {current.author}
-//               </p>
-//               <p className="text-blue-100 text-sm">{current.role}</p>
-//             </div>
-//           </div>
-
-//           {/* Navigation Buttons */}
-//           <div className="flex gap-3 relative z-10">
-//             <button
-//               onClick={handlePrevTestimonial}
-//               className="w-12 h-12 rounded-lg text-white flex items-center justify-center transition transform hover:scale-110 active:scale-95 bg-white/20 hover:bg-white/30"
-//             >
-//               <ArrowLeft className="w-5 h-5" />
-//             </button>
-//             <button
-//               onClick={handleNextTestimonial}
-//               className="w-12 h-12 rounded-lg text-white flex items-center justify-center transition transform hover:scale-110 active:scale-95"
-//               style={{
-//                 background: "linear-gradient(135deg, #93c5fd 0%, #c7d2fe 100%)",
-//               }}
-//             >
-//               <ArrowRight className="w-5 h-5" />
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Floating Card */}
-//         <div className="fixed bottom-8 right-8 w-72 bg-white rounded-2xl p-6 shadow-2xl z-50">
-//           <h3
-//             className="font-bold text-lg mb-2"
-//             style={{ color: "hsl(213, 94%, 20%)" }}
-//           >
-//             Master International Certifications
-//           </h3>
-//           <p className="text-sm mb-4" style={{ color: "hsl(215, 20%, 60%)" }}>
-//             Join thousands of professionals. Get certified, grow professionally
-//             with AIA's proven study material!
-//           </p>
-//           <div className="flex gap-2">
-//             {[...Array(4)].map((_, i) => (
-//               <div
-//                 key={i}
-//                 className="w-8 h-8 rounded-full border-2 border-white"
-//                 style={{
-//                   background:
-//                     "linear-gradient(135deg, #93c5fd 0%, #c7d2fe 100%)",
-//                   marginLeft: i > 0 ? "-12px" : "0",
-//                 }}
-//               />
-//             ))}
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-import { useState } from "react";
 import ApiErrorPage from "@/components/api-error/api-error";
-import DataTable from "@/components/common/data-table";
-import ImageCell from "@/components/common/ImageCell";
+import BlogPreview from "@/components/blog-preview/blog-preview";
+import MemoizedSelect from "@/components/common/memoized-select";
+import PageHeader from "@/components/common/page-header";
 import LoadingBar from "@/components/loader/loading-bar";
-import { GALLERYAPI } from "@/constants/apiConstants";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { BLOG_API, COURSE_API, GALLERY_API } from "@/constants/apiConstants";
+import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
-import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
-import { Copy } from "lucide-react";
-import GalleryEdit from "./gallery-edit";
+import { useQueryClient } from "@tanstack/react-query";
+import { CKEditor } from "ckeditor4-react";
+import {
+  AlertCircle,
+  BookOpen,
+  Calendar,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  Plus,
+  Trash2,
+  Type,
+  User,
+} from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-const GalleryList = () => {
-  const { data, isLoading, isError, refetch } = useGetApiMutation({
-    url: GALLERYAPI.gallery,
-    queryKey: ["gallery"],
+const CreateBlog = () => {
+  const { trigger, loading: isSubmitting } = useApiMutation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [showPreview, setShowPreview] = useState(true);
+  const { data: coursesData } = useGetApiMutation({
+    url: COURSE_API.courses,
+    queryKey: ["courses-dropdown"],
+  });
+  const [formData, setFormData] = useState({
+    blog_heading: "",
+    blog_short_description: "",
+    blog_course: "",
+    blog_created: new Date().toISOString().split("T")[0],
+    blog_images_alt: "",
+    blog_slug: "",
   });
 
-  const IMAGE_FOR = "Link Gallery";
-  const galleryBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
-  const noImageUrl = getNoImageUrl(data?.image_url);
+  const [blogSubs, setBlogSubs] = useState([
+    {
+      blog_sub_heading: "",
+      blog_sub_description: "",
+    },
+  ]);
 
-  const [copiedId, setCopiedId] = useState(null);
+  const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
+  console.log(selectedRelatedBlogs, "selectedRelatedBlogs");
+  const [errors, setErrors] = useState({});
+  const [subErrors, setSubErrors] = useState([]);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imageDimensions, setImageDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
 
-  const handleCopyClipboard = async (id, text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(id);
-      toast.success("Link copied");
+  const {
+    data: blogDropdownData,
+    isLoading: isLoadingBlogs,
+    isError: isErrorBlogs,
+    refetch: refetchBlogs,
+  } = useGetApiMutation({
+    url: BLOG_API.dropdown,
+    queryKey: ["blog-dropdown"],
+  });
 
-      setTimeout(() => setCopiedId(null), 1500);
-    } catch {
-      toast.error("Failed to copy");
+  const blogOptions =
+    blogDropdownData?.data?.map((blog) => ({
+      value: blog.id,
+      label: blog.blog_heading,
+      slug: blog.blog_slug,
+      status: blog.blog_status,
+    })) || [];
+
+  const {
+    data: galleryData,
+    isLoading: isLoadingGallery,
+    isError: isErrorGallery,
+    refetch: refetchGallery,
+  } = useGetApiMutation({
+    url: GALLERY_API.dropdown,
+    queryKey: ["gallery-list"],
+  });
+
+  const galleryOptions =
+    galleryData?.data?.map((item, index) => ({
+      value: `${item.gallery_url}${item.gallery_image}`,
+      label: `Image ${index + 1}`,
+      image: item.gallery_image,
+    })) || [];
+  const handleGalleryImageSelect = async (option) => {
+    if (option) {
+      setSelectedGalleryImage(option);
+
+      // Copy URL to clipboard
+
+      try {
+        await navigator.clipboard.writeText(option.value);
+        toast.success(`Image URL copied: ${option.image}`);
+      } catch (error) {
+        toast.error("Failed to copy URL");
+      }
+
+      // Set preview image
+      setPreviewImage(option.value);
+    } else {
+      setSelectedGalleryImage(null);
+    }
+  };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (name === "blog_heading" && !formData.blog_slug.includes("-edited-")) {
+      const slug = generateSlug(value);
+      setFormData((prev) => ({ ...prev, blog_slug: slug }));
+    }
+
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
     }
   };
 
-  const columns = [
-    {
-      id: "S. No.",
-      header: "S. No.",
-      cell: ({ row }) => (
-        <div className="text-xs font-medium">{row.index + 1}</div>
-      ),
-      size: 60,
-    },
+  const handleSlugChange = (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, blog_slug: value }));
+  };
 
-    {
-      header: "Image",
-      accessorKey: "gallery_image",
-      cell: ({ row }) => {
-        const fileName = row.original.gallery_image;
+  const generateSlug = (text) => {
+    if (!text) return "";
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  };
 
-        const src = fileName
-          ? `${galleryBaseUrl}${fileName}?t=${Date.now()}`
-          : `${noImageUrl}?t=${Date.now()}`;
+  const handleSubInputChange = (index, field, value) => {
+    const updatedSubs = [...blogSubs];
+    updatedSubs[index][field] = value;
+    setBlogSubs(updatedSubs);
 
-        return (
-          <img src={src} fallback={noImageUrl} alt={`${IMAGE_FOR} Image`} />
-        );
+    if (subErrors[index] && subErrors[index][field]) {
+      const updatedErrors = [...subErrors];
+      updatedErrors[index][field] = "";
+      setSubErrors(updatedErrors);
+    }
+  };
+
+  const addNewSub = () => {
+    setBlogSubs([
+      ...blogSubs,
+      {
+        blog_sub_heading: "",
+        blog_sub_description: "",
       },
-      size: 120,
-    },
+    ]);
+    setSubErrors([...subErrors, {}]);
+  };
 
-    {
-      accessorKey: "gallery_url",
-      header: "Gallery Url",
-      cell: ({ row }) => {
-        const baseUrl = row.original.gallery_url;
-        const fileName = row.original.gallery_image;
-        const fullUrl = `${baseUrl}${fileName}`;
-        const id = row.original.id;
+  const removeSub = (index) => {
+    if (blogSubs.length === 1) {
+      toast.error("At least one sub-section is required");
+      return;
+    }
 
-        return (
-          <div className="text-xs flex items-center gap-3">
-            <span className="truncate max-w-[200px]">{fullUrl}</span>
-            <Copy
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleCopyClipboard(id, fullUrl);
-              }}
-              className={`w-4 h-4 cursor-pointer transition-all ${
-                copiedId === id ? "text-green-600" : "text-red-600"
-              }`}
-            />
-          </div>
-        );
+    const updatedSubs = blogSubs.filter((_, i) => i !== index);
+    setBlogSubs(updatedSubs);
+    const updatedErrors = subErrors.filter((_, i) => i !== index);
+    setSubErrors(updatedErrors);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const newErrors = [];
+
+    if (file.type !== "image/webp") {
+      newErrors.push("The image must be in WEBP format only.");
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      newErrors.push("Image must be less than 5MB.");
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onload = () => {
+        if (img.width !== 1400 || img.height !== 450) {
+          newErrors.push("The image size must be exactly 1400×450 pixels.");
+        }
+
+        setImageDimensions({ width: img.width, height: img.height });
+
+        if (newErrors.length > 0) {
+          setErrors((prev) => ({
+            ...prev,
+            blog_images: newErrors.join(" \n "),
+          }));
+          setSelectedFile(null);
+          setPreviewImage(null);
+          setImageDimensions({ width: 0, height: 0 });
+        } else {
+          setSelectedFile(file);
+          setPreviewImage(reader.result);
+          setErrors((prev) => ({ ...prev, blog_images: "" }));
+        }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewImage(null);
+    setImageDimensions({ width: 0, height: 0 });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    if (!formData.blog_heading.trim()) {
+      newErrors.blog_heading = "Blog heading is required";
+      isValid = false;
+    }
+
+    if (!formData.blog_slug.trim()) {
+      newErrors.blog_slug = "Blog slug is required";
+      isValid = false;
+    } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formData.blog_slug)) {
+      newErrors.blog_slug =
+        "Slug can only contain lowercase letters, numbers, and hyphens";
+      isValid = false;
+    }
+
+    if (!formData.blog_short_description.trim()) {
+      newErrors.blog_short_description = "Short description is required";
+      isValid = false;
+    }
+
+    if (!formData.blog_course.trim()) {
+      newErrors.blog_course = "Course is required";
+      isValid = false;
+    }
+
+    if (!formData.blog_created.trim()) {
+      newErrors.blog_created = "Blog date is required";
+      isValid = false;
+    }
+
+    if (!formData.blog_images_alt.trim()) {
+      newErrors.blog_images_alt = "Image alt text is required";
+      isValid = false;
+    }
+
+    if (!selectedFile) {
+      newErrors.blog_images = "Blog image is required";
+      isValid = false;
+    } else if (
+      imageDimensions.width !== 1400 ||
+      imageDimensions.height !== 450
+    ) {
+      newErrors.blog_images = `Image dimensions must be exactly 1400×450 pixels. Current: ${imageDimensions.width}×${imageDimensions.height}`;
+      isValid = false;
+    }
+
+    const newSubErrors = [];
+    blogSubs.forEach((sub, index) => {
+      const subError = {};
+      if (!sub.blog_sub_heading.trim()) {
+        subError.blog_sub_heading = "Sub-heading is required";
+        isValid = false;
+      }
+      if (!sub.blog_sub_description.trim()) {
+        subError.blog_sub_description = "Sub-description is required";
+        isValid = false;
+      }
+      newSubErrors.push(subError);
+    });
+
+    setErrors(newErrors);
+    setSubErrors(newSubErrors);
+    return isValid;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
+    const formDataObj = new FormData();
+    formDataObj.append("blog_slug", formData.blog_slug);
+    formDataObj.append("blog_heading", formData.blog_heading);
+    formDataObj.append(
+      "blog_short_description",
+      formData.blog_short_description
+    );
+    formDataObj.append("blog_course", formData.blog_course);
+    formDataObj.append("blog_created", formData.blog_created);
+    formDataObj.append("blog_images_alt", formData.blog_images_alt);
+    formDataObj.append("blog_images", selectedFile);
+
+    blogSubs.forEach((sub, index) => {
+      formDataObj.append(
+        `sub[${index}][blog_sub_heading]`,
+        sub.blog_sub_heading
+      );
+      formDataObj.append(
+        `sub[${index}][blog_sub_description]`,
+        sub.blog_sub_description
+      );
+    });
+
+    selectedRelatedBlogs.forEach((blog, index) => {
+      formDataObj.append(`related[${index}][blog_related_id]`, blog.value);
+    });
+
+    try {
+      const res = await trigger({
+        url: BLOG_API.create,
+        method: "post",
+        data: formDataObj,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (res?.code === 201) {
+        toast.success(res?.msg || "Blog created successfully");
+        queryClient.invalidateQueries(["blog-list"]);
+        navigate("/blog-list");
+      } else {
+        toast.error(res?.msg || "Failed to create blog");
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.msg || "Something went wrong");
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      blog_heading: "",
+      blog_short_description: "",
+      blog_course: "",
+      blog_created: new Date().toISOString().split("T")[0],
+      blog_images_alt: "",
+      blog_slug: "",
+    });
+    setBlogSubs([
+      {
+        blog_sub_heading: "",
+        blog_sub_description: "",
       },
-      size: 220,
-    },
-
-    {
-      header: "Status",
-      accessorKey: "gallery_status",
-      cell: ({ row }) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            row.original.gallery_status === "Active"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {row.original.gallery_status}
-        </span>
-      ),
-      size: 120,
-    },
-
-    {
-      header: "Actions",
-      accessorKey: "actions",
-      cell: ({ row }) => <GalleryEdit galleryId={row.original.id} />,
-      size: 120,
-    },
-  ];
-
-  if (isError) {
-    return <ApiErrorPage onRetry={refetch} />;
-  }
+    ]);
+    setSelectedRelatedBlogs([]);
+    setSelectedFile(null);
+    setPreviewImage(null);
+    setImageDimensions({ width: 0, height: 0 });
+    setErrors({});
+    setSubErrors([]);
+    const fileInput = document.getElementById("blog_images");
+    if (fileInput) fileInput.value = "";
+  };
 
   return (
-    <>
-      {isLoading && <LoadingBar />}
-
-      <DataTable
-        data={data?.data || []}
-        columns={columns}
-        pageSize={10}
-        searchPlaceholder="Search gallery..."
+    <div className="max-w-full mx-auto">
+      <PageHeader
+        icon={User}
+        title="Blog Builder"
+        description="Create your blog with live preview"
+        rightContent={
+          <div className="flex justify-end gap-2 pt-4">
+            <div className="flex gap-3 justify-end">
+              <Button type="button" variant="outline" onClick={handleReset}>
+                Reset All
+              </Button>
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="px-8"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  "Publish Blog"
+                )}
+              </Button>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+              className="md:hidden"
+            >
+              {showPreview ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+              <span className="ml-2">
+                {showPreview ? "Hide" : "Show"} Preview
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </Button>
+          </div>
+        }
       />
-    </>
+      <div className="mt-2 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardContent className="p-4">
+              <Tabs defaultValue="basic" className="w-full">
+                <TabsList className="grid grid-cols-3">
+                  <TabsTrigger
+                    value="basic"
+                    className="flex items-center gap-2"
+                  >
+                    <Type className="h-4 w-4" />
+                    Basic Info
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="content"
+                    className="flex items-center gap-2"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Content
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="related"
+                    className="flex items-center gap-2"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Related Blog
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="basic" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Type className="h-4 w-4" />
+                        Blog Heading *
+                      </Label>
+                      <Textarea
+                        name="blog_heading"
+                        placeholder="Enter blog heading"
+                        value={formData.blog_heading}
+                        onChange={handleInputChange}
+                        className={`min-h-[100px] ${
+                          errors.blog_heading ? "border-red-500" : ""
+                        }`}
+                      />
+                      {errors.blog_heading && (
+                        <p className="text-sm text-red-500">
+                          {errors.blog_heading}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        <span>Short Description *</span>{" "}
+                      </Label>
+                      <Textarea
+                        name="blog_short_description"
+                        placeholder="Enter a brief description of your blog"
+                        value={formData.blog_short_description}
+                        onChange={handleInputChange}
+                        className={`min-h-[100px] ${
+                          errors.blog_short_description ? "border-red-500" : ""
+                        }`}
+                      />
+                      <div className="flex justify-between">
+                        {errors.blog_short_description ? (
+                          <p className="text-sm text-red-500">
+                            {errors.blog_short_description}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-gray-500"></p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-2 md:col-span-2 ">
+                      <Label className="flex items-center gap-2">
+                        <Type className="h-4 w-4" />
+                        Blog Slug *
+                      </Label>
+                      <Input
+                        name="blog_slug"
+                        placeholder="blog-slug-here"
+                        value={formData.blog_slug}
+                        onChange={handleSlugChange}
+                        className={errors.blog_slug ? "border-red-500" : ""}
+                      />
+                      {errors.blog_slug && (
+                        <p className="text-sm text-red-500">
+                          {errors.blog_slug}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        Auto-generates from heading, but you can edit it
+                        directly
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4" />
+                          Course *
+                        </Label>
+
+                        <Select
+                          value={formData.blog_course}
+                          onValueChange={(v) =>
+                            setFormData({ ...formData, blog_course: v })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Courses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {coursesData?.data?.map((c, key) => (
+                              <SelectItem key={key} value={c.courses_name}>
+                                {c.courses_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {errors.blog_course && (
+                          <p className="text-sm text-red-500">
+                            {errors.blog_course}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                          Example: CFE, CIA, CAMS, Other
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          Blog Date *
+                        </Label>
+                        <Input
+                          name="blog_created"
+                          type="date"
+                          value={formData.blog_created}
+                          onChange={handleInputChange}
+                          className={
+                            errors.blog_created ? "border-red-500" : ""
+                          }
+                        />
+                        {errors.blog_created && (
+                          <p className="text-sm text-red-500">
+                            {errors.blog_created}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <ImageIcon className="h-4 w-4" />
+                          Image Alt Text *
+                        </Label>
+                        <Textarea
+                          name="blog_images_alt"
+                          placeholder="Describe the blog image"
+                          value={formData.blog_images_alt}
+                          onChange={handleInputChange}
+                          className={
+                            errors.blog_images_alt ? "border-red-500" : ""
+                          }
+                        />
+                        {errors.blog_images_alt && (
+                          <p className="text-sm text-red-500">
+                            {errors.blog_images_alt}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-sm">
+                        <ImageIcon className="h-4 w-4" />
+                        Blog Image *
+                      </Label>
+
+                      {selectedFile ? (
+                        <div className="border border-dashed rounded-md p-3">
+                          <div className="relative aspect-[1400/450] bg-gray-100 rounded overflow-hidden">
+                            <img
+                              src={previewImage}
+                              alt="Preview"
+                              className="w-full h-full object-contain"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="destructive"
+                              onClick={handleRemoveImage}
+                              className="absolute top-1 right-1 h-6 w-6"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+
+                          <div className="mt-2 text-xs flex items-center gap-3 text-center text-gray-600">
+                            <p className="truncate font-medium">
+                              {selectedFile.name}
+                            </p>
+                            <p>
+                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                            {imageDimensions.width > 0 && (
+                              <p
+                                className={
+                                  imageDimensions.width === 1400 &&
+                                  imageDimensions.height === 450
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }
+                              >
+                                {imageDimensions.width}×{imageDimensions.height}
+                                px
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border border-dashed rounded-md p-4 text-center hover:border-blue-400 transition">
+                          <Input
+                            id="blog_images"
+                            type="file"
+                            accept=".webp,image/webp"
+                            onChange={handleImageChange}
+                            className="hidden"
+                          />
+                          <Label
+                            htmlFor="blog_images"
+                            className="cursor-pointer"
+                          >
+                            <div className="flex flex-col items-center gap-2">
+                              <ImageIcon className="h-8 w-8 text-blue-500" />
+                              <p className="text-sm font-medium">
+                                Upload Image
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Click or drag & drop
+                              </p>
+                            </div>
+                          </Label>
+                        </div>
+                      )}
+
+                      {errors.blog_images && (
+                        <p className="text-xs text-red-500 text-center">
+                          {errors.blog_images}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="content" className="space-y-1">
+                  {blogSubs.map((sub, index) => (
+                    <Card key={index} className="border">
+                      <CardContent className="px-3 py-1">
+                        <div className="flex justify-between items-center mb-1">
+                          <h4 className="font-medium">Section {index + 1}</h4>
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeSub(index)}
+                            disabled={blogSubs.length === 1}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
+
+                        <div>
+                          <div className="space-y-1">
+                            <Label>Sub-heading *</Label>
+                            <Input
+                              placeholder="Enter sub-heading"
+                              value={sub.blog_sub_heading}
+                              onChange={(e) =>
+                                handleSubInputChange(
+                                  index,
+                                  "blog_sub_heading",
+                                  e.target.value
+                                )
+                              }
+                              className={
+                                subErrors[index]?.blog_sub_heading
+                                  ? "border-red-500"
+                                  : ""
+                              }
+                            />
+                            {subErrors[index]?.blog_sub_heading && (
+                              <p className="text-sm text-red-500">
+                                {subErrors[index].blog_sub_heading}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label>Sub-description *</Label>
+                            <div
+                              className={
+                                subErrors[index]?.blog_sub_description
+                                  ? "border border-red-500 rounded"
+                                  : ""
+                              }
+                            >
+                              <CKEditor
+                                initData={sub.blog_sub_description || ""}
+                                config={{
+                                  versionCheck: false,
+                                  toolbar: [
+                                    {
+                                      name: "basicstyles",
+                                      items: [
+                                        "Bold",
+                                        "Italic",
+                                        "Underline",
+                                        "Strike",
+                                      ],
+                                    },
+                                    {
+                                      name: "paragraph",
+                                      items: [
+                                        "NumberedList",
+                                        "BulletedList",
+                                        "-",
+                                        "Outdent",
+                                        "Indent",
+                                      ],
+                                    },
+                                    {
+                                      name: "links",
+                                      items: ["Link", "Unlink"],
+                                    },
+                                    {
+                                      name: "insert",
+                                      items: ["Image", "Table"],
+                                    },
+                                    {
+                                      name: "styles",
+                                      items: [
+                                        "Styles",
+                                        "Format",
+                                        "Font",
+                                        "FontSize",
+                                      ],
+                                    },
+                                    {
+                                      name: "colors",
+                                      items: ["TextColor", "BGColor"],
+                                    },
+                                    { name: "tools", items: ["Maximize"] },
+                                  ],
+                                  height: 200,
+                                  removePlugins: "elementspath",
+                                  resize_enabled: false,
+                                }}
+                                onChange={(event) => {
+                                  const data = event.editor.getData();
+                                  handleSubInputChange(
+                                    index,
+                                    "blog_sub_description",
+                                    data
+                                  );
+                                }}
+                              />
+                            </div>
+                            {subErrors[index]?.blog_sub_description && (
+                              <p className="text-sm text-red-500 mt-1">
+                                {subErrors[index].blog_sub_description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  <div className=" flex flex-row items-center gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addNewSub}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Section
+                    </Button>
+                    <Select
+                      value={selectedGalleryImage?.value}
+                      onValueChange={(value) => {
+                        const option = galleryOptions.find(
+                          (opt) => opt.value === value
+                        );
+                        handleGalleryImageSelect(option);
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an image URL " />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {galleryOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            <div className="flex items-center gap-2">
+                              <div className=" rounded overflow-hidden flex-shrink-0">
+                                <img
+                                  src={option.value}
+                                  alt={option.label}
+                                  className="w-8 h-8 object-cover"
+                                />
+                              </div>
+                              <span>{option.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="related" className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      Related Blogs
+                    </Label>
+                    <p className="text-sm text-gray-500">
+                      Select blogs that are related to this content
+                    </p>
+
+                    {isLoadingBlogs ? (
+                      <LoadingBar />
+                    ) : isErrorBlogs ? (
+                      <ApiErrorPage onRetry={() => refetchBlogs()} />
+                    ) : (
+                      <>
+                        <MemoizedSelect
+                          isMulti
+                          options={blogOptions}
+                          value={selectedRelatedBlogs}
+                          onChange={setSelectedRelatedBlogs}
+                          placeholder="Search and select related blogs..."
+                        />
+                        {selectedRelatedBlogs.length > 0 && (
+                          <div className="mt-4 space-y-2">
+                            <Label className="text-sm font-medium">
+                              Selected Blogs ({selectedRelatedBlogs.length})
+                            </Label>
+                            <div className="space-y-2">
+                              {selectedRelatedBlogs.map((blog) => (
+                                <div
+                                  key={blog.value}
+                                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                >
+                                  <div>
+                                    <p className="font-medium text-sm">
+                                      {blog.label}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      Slug: {blog.slug}
+                                    </p>
+                                  </div>
+                                  <Badge
+                                    variant={
+                                      blog.status === "Active"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {blog.status}
+                                  </Badge>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div
+          className={`lg:col-span-1 ${
+            showPreview ? "block" : "hidden lg:block"
+          }`}
+        >
+          <div className="sticky top-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">Live Preview</h3>
+
+                    <BlogPreview
+                      formData={formData}
+                      blogSubs={blogSubs}
+                      selectedRelatedBlogs={selectedRelatedBlogs}
+                      previewImage={previewImage}
+                      imageDimensions={imageDimensions}
+                    />
+                  </div>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                    Real-time
+                  </Badge>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="border rounded-lg overflow-hidden shadow-sm">
+                    <div className="relative aspect-[1400/450] bg-gray-100 overflow-hidden">
+                      {previewImage ? (
+                        <img
+                          src={previewImage}
+                          alt={formData.blog_images_alt || "Blog image"}
+                          className="w-full h-full object-cover"
+                          style={{
+                            objectFit:
+                              imageDimensions.width === 1400 &&
+                              imageDimensions.height === 450
+                                ? "cover"
+                                : "contain",
+                            backgroundColor:
+                              imageDimensions.width === 1400 &&
+                              imageDimensions.height === 450
+                                ? "transparent"
+                                : "#f3f4f6",
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-r from-gray-100 to-gray-200">
+                          <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">
+                            1400×450 pixels
+                          </p>
+                        </div>
+                      )}
+                      {formData.blog_course && (
+                        <div className="absolute top-3 left-3">
+                          <Badge
+                            variant="secondary"
+                            className="bg-white/90 text-gray-800"
+                          >
+                            {formData.blog_course}
+                          </Badge>
+                        </div>
+                      )}
+                      {previewImage && imageDimensions.width > 0 && (
+                        <div className="absolute bottom-2 right-2">
+                          <Badge
+                            variant="outline"
+                            className={`text-xs ${
+                              imageDimensions.width === 1400 &&
+                              imageDimensions.height === 450
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : "bg-red-50 text-red-700 border-red-200"
+                            }`}
+                          >
+                            {imageDimensions.width}×{imageDimensions.height}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-4">
+                      {formData.blog_heading ? (
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                          {formData.blog_heading}
+                        </h3>
+                      ) : (
+                        <div className="h-6 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                      )}
+
+                      {formData.blog_slug && (
+                        <div className="mb-2">
+                          <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                            /blog/{formData.blog_slug}
+                          </code>
+                        </div>
+                      )}
+
+                      {formData.blog_short_description ? (
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+                          {formData.blog_short_description}
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                          <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>{formData.blog_created || "Date not set"}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <BookOpen className="h-3 w-3" />
+                          <span>
+                            {blogSubs.length} section
+                            {blogSubs.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {previewImage && (
+                    <Alert
+                      className={`${
+                        imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450
+                          ? "bg-green-50 border-green-200"
+                          : "bg-yellow-50 border-yellow-200"
+                      }`}
+                    >
+                      <AlertCircle
+                        className={`h-4 w-4 ${
+                          imageDimensions.width === 1400 &&
+                          imageDimensions.height === 450
+                            ? "text-green-600"
+                            : "text-yellow-600"
+                        }`}
+                      />
+                      <AlertDescription className="text-sm">
+                        {imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450 ? (
+                          <span className="text-green-700">
+                            ✓ Image dimensions are correct
+                          </span>
+                        ) : (
+                          <span className="text-yellow-700">
+                            ⚠ Current: {imageDimensions.width}×
+                            {imageDimensions.height}. Required: 1400×450
+                          </span>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {blogSubs.map((sub, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-800 mb-2">
+                        {sub.blog_sub_heading || `Section ${index + 1}`}
+                      </h4>
+                      {sub.blog_sub_description ? (
+                        <p className="text-gray-600 text-sm line-clamp-3">
+                          {sub.blog_sub_description}
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                          <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {selectedRelatedBlogs.length > 0 && (
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-800 mb-2">
+                        Related Blogs
+                      </h4>
+                      <div className="space-y-2">
+                        {selectedRelatedBlogs.map((blog) => (
+                          <div
+                            key={blog.value}
+                            className="flex items-center gap-2 p-2 bg-gray-50 rounded"
+                          >
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <span className="text-sm text-gray-700 line-clamp-1">
+                              {blog.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-2xl font-bold text-gray-900">
+                        {formData.blog_heading.length}
+                      </p>
+                      <p className="text-xs text-gray-500">Chars</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-2xl font-bold text-gray-900">
+                        {blogSubs.length}
+                      </p>
+                      <p className="text-xs text-gray-500">Sections</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-2xl font-bold text-gray-900">
+                        {selectedFile ? "✓" : "✗"}
+                      </p>
+                      <p className="text-xs text-gray-500">Image</p>
+                    </div>
+                    <div
+                      className={`p-3 rounded-lg ${
+                        imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450
+                          ? "bg-green-50"
+                          : selectedFile
+                          ? "bg-yellow-50"
+                          : "bg-gray-50"
+                      }`}
+                    >
+                      <p className="text-2xl font-bold text-gray-900">
+                        {imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450
+                          ? "✓"
+                          : selectedFile
+                          ? "⚠"
+                          : "-"}
+                      </p>
+                      <p className="text-xs text-gray-500">Size</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default GalleryList;
+export default CreateBlog;
