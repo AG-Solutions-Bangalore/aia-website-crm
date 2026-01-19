@@ -767,8 +767,7 @@ const StudentForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {(data.student_have_testimonial === "Yes" ||
               data.student_have_certificate === "Yes" ||
-              data.student_recent_passout === "Yes" ||
-              data.student_have_story === "Yes") && (
+              data.student_recent_passout === "Yes") && (
               <>
                 <div className="col-span-2">
                   <ImageUpload
@@ -831,28 +830,31 @@ const StudentForm = () => {
               </div>
             )}
 
-            {data?.student_have_certificate === "Yes" && (
+            {(data?.student_have_certificate === "Yes" ||
+              data.student_have_story === "Yes") && (
+              <div className="col-span-2">
+                <label className="text-sm font-medium">LinkedIn Link *</label>
+                <Textarea
+                  placeholder="Enter LinkedIn link"
+                  value={data.student_linkedin_link}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      student_linkedin_link: e.target.value,
+                    })
+                  }
+                  // className="h-16"
+                  rows={4}
+                />
+                {errors.student_linkedin_link && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.student_linkedin_link}
+                  </p>
+                )}
+              </div>
+            )}
+            {data?.student_have_certificate == "Yes" && (
               <>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium">LinkedIn Link *</label>
-                  <Textarea
-                    placeholder="Enter LinkedIn link"
-                    value={data.student_linkedin_link}
-                    onChange={(e) =>
-                      setData({
-                        ...data,
-                        student_linkedin_link: e.target.value,
-                      })
-                    }
-                    // className="h-16"
-                    rows={4}
-                  />
-                  {errors.student_linkedin_link && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {errors.student_linkedin_link}
-                    </p>
-                  )}
-                </div>
                 <div className="col-span-2">
                   <ImageUpload
                     id="student_certificate_image"
@@ -1201,9 +1203,9 @@ const StudentForm = () => {
                     error={errors.student_story_banner_image}
                     format="WEBP"
                     allowedExtensions={["webp"]}
-                    dimensions="1080x1080"
+                    dimensions="1200x628"
                     maxSize={5}
-                    requiredDimensions={[1080, 1080]}
+                    requiredDimensions={[1200, 628]}
                   />
                 </div>
                 <div>
