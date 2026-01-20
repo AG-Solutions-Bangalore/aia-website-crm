@@ -64,6 +64,7 @@ const GalleryList = () => {
           />
         );
       },
+      enableSorting: false,
       size: 120,
     },
 
@@ -92,6 +93,7 @@ const GalleryList = () => {
           </div>
         );
       },
+      enableSorting: false,
     },
 
     {
@@ -115,6 +117,7 @@ const GalleryList = () => {
       accessorKey: "actions",
       cell: ({ row }) => <GalleryEdit galleryId={row.original.id} />,
       size: 120,
+      enableSorting: false,
     },
   ];
 
@@ -135,7 +138,6 @@ const GalleryList = () => {
         searchPlaceholder="Search gallery..."
         extraButton={<GalleryCreate />}
       />
-
     </>
   );
 };

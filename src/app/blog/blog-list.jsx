@@ -41,10 +41,9 @@ const BlogList = () => {
   const blogBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
   const noImageUrl = getNoImageUrl(data?.image_url);
 
-  /* ✅ Unique Courses for Tabs */
   const courses = useMemo(
     () => [...new Set(list.map((blog) => blog.blog_course))],
-    [list]
+    [list],
   );
 
   const handleDeleteClick = (blog) => {
@@ -83,33 +82,35 @@ const BlogList = () => {
         const src = fileName ? `${blogBaseUrl}${fileName}` : noImageUrl;
         return <ImageCell src={src} fallback={noImageUrl} alt="Blog Image" />;
       },
+      enableSorting: false,
     },
     { header: "Blog Slug", accessorKey: "blog_slug" },
     { header: "Blog Heading", accessorKey: "blog_heading" },
     { header: "Course", accessorKey: "blog_course" },
-{
-  header: "Trending",
-  accessorKey: "blog_trending",
-  cell: ({ row }) => {
-    const value = row.original.blog_trending;
-    if (value == null) return null;
+    {
+      header: "Trending",
+      accessorKey: "blog_trending",
+      cell: ({ row }) => {
+        const value = row.original.blog_trending;
+        if (value == null) return null;
 
-    const normalizedValue = String(value).toLowerCase();
+        const normalizedValue = String(value).toLowerCase();
 
-    const displayText = normalizedValue === "yes" ? "Yes" : "No";
-    const bgColor = normalizedValue === "yes" ? "bg-green-100" : "bg-red-100";
-    const textColor = normalizedValue === "yes" ? "text-green-800" : "text-red-800";
+        const displayText = normalizedValue === "yes" ? "Yes" : "No";
+        const bgColor =
+          normalizedValue === "yes" ? "bg-green-100" : "bg-red-100";
+        const textColor =
+          normalizedValue === "yes" ? "text-green-800" : "text-red-800";
 
-    return (
-      <span
-        className={`px-4 py-1 rounded-full text-center text-xs ${bgColor} ${textColor}`}
-      >
-        {displayText}
-      </span>
-    );
-  },
-},
-
+        return (
+          <span
+            className={`px-4 py-1 rounded-full text-center text-xs ${bgColor} ${textColor}`}
+          >
+            {displayText}
+          </span>
+        );
+      },
+    },
 
     {
       header: "Status",
@@ -154,6 +155,7 @@ const BlogList = () => {
           </button>
         </div>
       ),
+      enableSorting: false,
     },
   ];
 
@@ -172,7 +174,6 @@ const BlogList = () => {
           ))}
         </TabsList>
 
-        {/* ✅ All Blogs */}
         <TabsContent value="ALL">
           <DataTable
             data={list}
@@ -183,10 +184,9 @@ const BlogList = () => {
           />
         </TabsContent>
 
-        {/* ✅ Blogs by Course */}
         {courses.map((course) => {
           const filteredData = list.filter(
-            (blog) => blog.blog_course === course
+            (blog) => blog.blog_course === course,
           );
           return (
             <TabsContent key={course} value={course}>
@@ -202,7 +202,6 @@ const BlogList = () => {
         })}
       </Tabs>
 
-      {/* ✅ Delete Alert */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

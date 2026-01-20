@@ -39,18 +39,22 @@ const BannerList = () => {
           />
         );
       },
+      enableSorting: false,
     },
     {
       header: "Sort Order",
       accessorKey: "banner_sort",
+      enableSorting: false,
     },
     {
       header: "Banner Text",
       accessorKey: "banner_text",
+      enableSorting: false,
     },
     {
       header: "Alt Text",
       accessorKey: "banner_image_alt",
+      enableSorting: false,
     },
     {
       header: "Status",
@@ -66,6 +70,7 @@ const BannerList = () => {
           {row.original.banner_status}
         </span>
       ),
+      enableSorting: false,
     },
     {
       header: "Actions",
@@ -81,6 +86,7 @@ const BannerList = () => {
           </Link>
         </div>
       ),
+      enableSorting: false,
     },
   ];
   if (isLoading) return <LoadingBar />;

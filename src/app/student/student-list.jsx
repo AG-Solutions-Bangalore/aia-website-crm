@@ -10,8 +10,9 @@ import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMemo } from "react";
+import moment from "moment";
 
-const StudentList = () => {
+const StudentList = ({ enable }) => {
   const navigate = useNavigate();
 
   const { data, isLoading, isError, refetch } = useGetApiMutation({
@@ -24,79 +25,294 @@ const StudentList = () => {
   const studentBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
   const noImageUrl = getNoImageUrl(data?.image_url);
 
-  const courseGroups = useMemo(() => {
-    return [...new Set(list.map((item) => item.student_course))];
-  }, [list]);
+  const getCourseGroups = (data) => {
+    return [...new Set(data.map((item) => item.student_course))];
+  };
+  const activeStudents = useMemo(
+    () => list.filter((item) => item.student_status === "Active"),
+    [list],
+  );
 
+  const inactiveStudents = useMemo(
+    () => list.filter((item) => item.student_status !== "Active"),
+    [list],
+  );
+  const activeCourseGroups = useMemo(
+    () => getCourseGroups(activeStudents),
+    [activeStudents],
+  );
+
+  const inactiveCourseGroups = useMemo(
+    () => getCourseGroups(inactiveStudents),
+    [inactiveStudents],
+  );
   const columns = [
-    {
-      header: "Student Image",
-      accessorKey: "student_image",
-      cell: ({ row }) => {
-        const fileName = row.original.student_image;
-        if (!fileName) return "-";
-        return (
-          <ImageCell
-            src={`${studentBaseUrl}${fileName}`}
-            fallback={noImageUrl}
-            alt="Student Image"
-          />
-        );
-      },
-    },
-    {
-      header: "Certificate Image",
-      accessorKey: "student_certificate_image",
-      cell: ({ row }) => {
-        const fileName = row.original.student_certificate_image;
-        if (!fileName) return "-";
-        return (
-          <ImageCell
-            src={`${studentBaseUrl}${fileName}`}
-            fallback={noImageUrl}
-            alt="Certificate Image"
-          />
-        );
-      },
-    },
-    {
-      header: "YouTube Image",
-      accessorKey: "student_youtube_image",
-      cell: ({ row }) => {
-        const fileName = row.original.student_youtube_image;
-        if (!fileName) return "-";
-        return (
-          <ImageCell
-            src={`${studentBaseUrl}${fileName}`}
-            fallback={noImageUrl}
-            alt="YouTube Image"
-          />
-        );
-      },
-    },
-    { header: "Sort", accessorKey: "student_sort" },
-    { header: "UID", accessorKey: "student_uid" },
+    ...(enable == "testimonial" || enable == "recentpassout"
+      ? [
+          {
+            header: "Student Image",
+            accessorKey: "student_image",
+            cell: ({ row }) => {
+              const fileName = row.original.student_image;
+              if (!fileName) return "-";
+              return (
+                <ImageCell
+                  src={`${studentBaseUrl}${fileName}`}
+                  fallback={noImageUrl}
+                  alt="Student Image"
+                />
+              );
+            },
+            enableSorting: false,
+          },
+        ]
+      : []),
+    ...(enable == "certificate"
+      ? [
+          {
+            header: "Certificate Image",
+            accessorKey: "student_certificate_image",
+            cell: ({ row }) => {
+              const fileName = row.original.student_certificate_image;
+              if (!fileName) return "-";
+              return (
+                <ImageCell
+                  src={`${studentBaseUrl}${fileName}`}
+                  fallback={noImageUrl}
+                  alt="Certificate Image"
+                />
+              );
+            },
+            enableSorting: false,
+          },
+        ]
+      : []),
+    ...(enable == "youtube"
+      ? [
+          {
+            header: "YouTube Image",
+            accessorKey: "student_youtube_image",
+            cell: ({ row }) => {
+              const fileName = row.original.student_youtube_image;
+              if (!fileName) return "-";
+              return (
+                <ImageCell
+                  src={`${studentBaseUrl}${fileName}`}
+                  fallback={noImageUrl}
+                  alt="YouTube Image"
+                />
+              );
+            },
+            enableSorting: false,
+          },
+        ]
+      : []),
+    ...(enable == "story"
+      ? [
+          {
+            header: "Story Image",
+            accessorKey: "student_story_banner_image",
+            cell: ({ row }) => {
+              const fileName = row.original.student_story_banner_image;
+              if (!fileName) return "-";
+              return (
+                <ImageCell
+                  src={`${studentBaseUrl}${fileName}`}
+                  fallback={noImageUrl}
+                  alt="YouTube Image"
+                />
+              );
+            },
+            enableSorting: false,
+          },
+        ]
+      : []),
+    ...(enable == "officeimage"
+      ? [
+          {
+            header: "Office Image",
+            accessorKey: "student_office_image",
+            cell: ({ row }) => {
+              const fileName = row.original.student_office_image;
+              if (!fileName) return "-";
+              return (
+                <ImageCell
+                  src={`${studentBaseUrl}${fileName}`}
+                  fallback={noImageUrl}
+                  alt="YouTube Image"
+                />
+              );
+            },
+            enableSorting: false,
+          },
+        ]
+      : []),
+
+    ...(enable === "story"
+      ? [
+          {
+            header: "Date",
+            accessorKey: "student_story_date",
+            enableSorting: true,
+            cell: ({ getValue }) => {
+              const value = getValue();
+              return value ? moment(value).format("DD MMM YYYY") : "-";
+            },
+          },
+        ]
+      : []),
+    ...(enable == "youtube"
+      ? [
+          {
+            header: "Sort",
+            enableSorting: true,
+            accessorKey: "student_youtube_sort",
+          },
+        ]
+      : []),
+    ...(enable != "youtube"
+      ? [{ header: "Sort", enableSorting: true, accessorKey: "student_sort" }]
+      : []),
     { header: "Name", accessorKey: "student_name" },
-    { header: "Course", accessorKey: "student_course" },
-    { header: "Designation", accessorKey: "student_designation" },
+    { header: "Course", accessorKey: "student_course", enableSorting: false },
     {
-      header: "Status",
-      accessorKey: "student_status",
-      cell: ({ row }) => {
-        const isActive = row.original.student_status === "Active";
-        return (
-          <span
-            className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
-              isActive
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {row.original.student_status}
-          </span>
-        );
-      },
+      header: "Designation",
+      accessorKey: "student_designation",
+      enableSorting: false,
     },
+    ...(enable == "testimonial"
+      ? [
+          {
+            header: "Testimonial",
+            accessorKey: "student_have_testimonial",
+            cell: ({ row }) => {
+              const isActive = row.original.student_have_testimonial === "Yes";
+              return (
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+                    isActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {row.original.student_have_testimonial}
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
+    ...(enable == "youtube"
+      ? [
+          {
+            header: "YouTube",
+            accessorKey: "student_have_youtube",
+            cell: ({ row }) => {
+              const isActive = row.original.student_have_youtube === "Yes";
+              return (
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+                    isActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {row.original.student_have_youtube}
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
+    ...(enable == "certificate"
+      ? [
+          {
+            header: "Certificate",
+            accessorKey: "student_have_certificate",
+            cell: ({ row }) => {
+              const isActive = row.original.student_have_certificate === "Yes";
+              return (
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+                    isActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {row.original.student_have_certificate}
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
+    ...(enable == "story"
+      ? [
+          {
+            header: "Story",
+            accessorKey: "student_have_story",
+            cell: ({ row }) => {
+              const isActive = row.original.student_have_story === "Yes";
+              return (
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+                    isActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {row.original.student_have_story}
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
+    ...(enable == "recentpassout"
+      ? [
+          {
+            header: "Passout",
+            accessorKey: "student_recent_passout",
+            cell: ({ row }) => {
+              const isActive = row.original.student_recent_passout === "Yes";
+              return (
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+                    isActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {row.original.student_recent_passout}
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
+    ...(enable == "officeimage"
+      ? [
+          {
+            header: "Office",
+            accessorKey: "student_have_office_image",
+            cell: ({ row }) => {
+              const isActive = row.original.student_have_office_image === "Yes";
+              return (
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+                    isActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {row.original.student_have_office_image}
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
+
     {
       header: "Action",
       cell: ({ row }) => (
@@ -116,48 +332,97 @@ const StudentList = () => {
 
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="ALL">
+      <Tabs defaultValue="ACTIVE" className="w-full">
         <TabsList>
-          <TabsTrigger value="ALL">All</TabsTrigger>
-          {courseGroups.map((course) => (
-            <TabsTrigger key={course} value={course}>
-              {course}
-            </TabsTrigger>
-          ))}
+          <TabsTrigger value="ACTIVE">Active</TabsTrigger>
+          <TabsTrigger value="INACTIVE">Inactive</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="ALL">
-          <DataTable
-            data={list}
-            columns={columns}
-            pageSize={10}
-            searchPlaceholder="Search student..."
-            addButton={{
-              to: "/student/create",
-              label: "Add Student",
-            }}
-          />
-        </TabsContent>
+        <TabsContent value="ACTIVE">
+          <Tabs defaultValue="ALL_ACTIVE">
+            <TabsList>
+              <TabsTrigger value="ALL_ACTIVE">All</TabsTrigger>
+              {activeCourseGroups.map((course) => (
+                <TabsTrigger key={course} value={course}>
+                  {course}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-        {courseGroups.map((course) => {
-          const filteredData = list.filter(
-            (item) => item.student_course === course
-          );
-          return (
-            <TabsContent key={course} value={course}>
+            <TabsContent value="ALL_ACTIVE">
               <DataTable
-                data={filteredData}
+                data={activeStudents}
                 columns={columns}
                 pageSize={10}
-                searchPlaceholder={`Search ${course} students...`}
+                searchPlaceholder="Search active students..."
                 addButton={{
                   to: "/student/create",
                   label: "Add Student",
                 }}
               />
             </TabsContent>
-          );
-        })}
+
+            {activeCourseGroups.map((course) => (
+              <TabsContent key={course} value={course}>
+                <DataTable
+                  data={activeStudents.filter(
+                    (item) => item.student_course === course,
+                  )}
+                  columns={columns}
+                  pageSize={10}
+                  searchPlaceholder={`Search ${course} (Active)...`}
+                  addButton={{
+                    to: "/student/create",
+                    label: "Add Student",
+                  }}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </TabsContent>
+
+        <TabsContent value="INACTIVE">
+          <Tabs defaultValue="ALL_INACTIVE">
+            <TabsList>
+              <TabsTrigger value="ALL_INACTIVE">All</TabsTrigger>
+              {inactiveCourseGroups.map((course) => (
+                <TabsTrigger key={course} value={course}>
+                  {course}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <TabsContent value="ALL_INACTIVE">
+              <DataTable
+                data={inactiveStudents}
+                columns={columns}
+                pageSize={10}
+                searchPlaceholder="Search inactive students..."
+                addButton={{
+                  to: "/student/create",
+                  label: "Add Student",
+                }}
+              />
+            </TabsContent>
+
+            {inactiveCourseGroups.map((course) => (
+              <TabsContent key={course} value={course}>
+                <DataTable
+                  data={inactiveStudents.filter(
+                    (item) => item.student_course === course,
+                  )}
+                  columns={columns}
+                  pageSize={10}
+                  searchPlaceholder={`Search ${course} (Inactive)...`}
+                  addButton={{
+                    to: "/student/create",
+                    label: "Add Student",
+                  }}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </TabsContent>
       </Tabs>
     </div>
   );

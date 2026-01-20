@@ -62,17 +62,49 @@ const NAVIGATION_CONFIG = {
       isActive: false,
     },
     YOUTUBELIST: {
-      title: "Leture Youtube",
+      title: "Lecture Youtube",
       url: "/lecture-youtube",
       icon: Youtube,
       isActive: false,
     },
     STUDENTLIST: {
-      title: "Student List",
-      url: "/student-list",
-      icon: Users,
-      isActive: false,
+      title: "Student",
+      url: "#",
+      icon: Settings,
+      items: [
+        {
+          title: "Testimonial",
+          url: "/student-testimonial",
+          icon: Users,
+        },
+        {
+          title: "Youtube",
+          url: "/student-youtube",
+          icon: Users,
+        },
+        {
+          title: "Certificate",
+          url: "/student-certificate",
+          icon: Users,
+        },
+        {
+          title: "Success Story",
+          url: "/student-story",
+          icon: Users,
+        },
+        {
+          title: "Recent Passout",
+          url: "/student-recent-passout",
+          icon: Users,
+        },
+        {
+          title: "Office Image",
+          url: "/student-officeimage",
+          icon: Users,
+        },
+      ],
     },
+
     FAQLIST: {
       title: "FAQ",
       url: "/faq-list",
@@ -114,7 +146,7 @@ const USER_ROLE_PERMISSIONS = {
     navMain: [
       "POPUPLIST",
       "BANNERLIST",
-      "COMPANYLIST", 
+      "COMPANYLIST",
       "COUNTRYLIST",
       "YOUTUBELIST",
       "STUDENTLIST",
@@ -232,7 +264,7 @@ const useNavigationData = (userType) => {
     const navMain = buildNavItems(
       permissions.navMain,
       // { ...NAVIGATION_CONFIG.COMMON, ...NAVIGATION_CONFIG.MODULES },
-      { ...NAVIGATION_CONFIG.COMMON }
+      { ...NAVIGATION_CONFIG.COMMON },
       // { MASTER_SETTINGS_LIMITED: LIMITED_MASTER_SETTINGS }
     );
 
