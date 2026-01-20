@@ -18,9 +18,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  ArrowUpDown,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Search,
   SquarePlus,
 } from "lucide-react";
@@ -40,6 +42,7 @@ const DataTable = ({
   addButton,
   extraButton,
 }) => {
+  const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -50,9 +53,11 @@ const DataTable = ({
     data,
     columns,
     state: {
+      sorting,
       globalFilter,
       pagination,
     },
+    onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
@@ -92,7 +97,7 @@ const DataTable = ({
                 .map((column) => {
                   const columnDef = columns.find(
                     (col) =>
-                      col.accessorKey === column.id || col.id === column.id
+                      col.accessorKey === column.id || col.id === column.id,
                   );
 
                   return (
@@ -137,16 +142,53 @@ const DataTable = ({
       <div className="rounded-none border min-h-[31rem] grid grid-cols-1">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                {/* {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {flexRender(
                       header.column.columnDef.header,
-                      header.getContext()
+                      header.getContext(),
                     )}
                   </TableHead>
-                ))}
+                ))} */}
+                {hg.headers.map((header) => {
+                  const canSort = header.column.getCanSort();
+                  const sortState = header.column.getIsSorted();
+
+                  return (
+                    <TableHead
+                      key={header.id}
+                      onClick={
+                        canSort
+                          ? header.column.getToggleSortingHandler()
+                          : undefined
+                      }
+                      className={canSort ? "cursor-pointer select-none" : ""}
+                    >
+                      <div className="flex items-center gap-1">
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+
+                        {canSort && (
+                          <>
+                            {sortState === "asc" && (
+                              <ChevronUp className="h-3 w-3" />
+                            )}
+                            {sortState === "desc" && (
+                              <ChevronDown className="h-3 w-3" />
+                            )}
+                            {!sortState && (
+                              <ArrowUpDown className="h-3 w-3 opacity-40" />
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -159,7 +201,7 @@ const DataTable = ({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

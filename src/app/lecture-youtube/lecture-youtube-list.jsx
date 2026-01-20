@@ -21,14 +21,21 @@ const LetureYoutubeList = () => {
   });
 
   const list = data?.data || [];
-
-  const pageGroups = useMemo(() => {
-    return [...new Set(list.map((item) => item.page_one_name))];
-  }, [list]);
-
   const imageBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
   const noImageUrl = getNoImageUrl(data?.image_url);
 
+  const activeList = useMemo(
+    () => list.filter((i) => i.youtube_status === "Active"),
+    [list],
+  );
+  const inactiveList = useMemo(
+    () => list.filter((i) => i.youtube_status !== "Active"),
+    [list],
+  );
+  const getPages = (data) =>
+    [...new Set(data.map((i) => i.page_one_name))].filter(Boolean);
+  const groupByPage = (data, page) =>
+    data.filter((i) => i.page_one_name === page);
   const columns = [
     {
       header: "Image",
@@ -40,32 +47,16 @@ const LetureYoutubeList = () => {
           <ImageCell src={src} fallback={noImageUrl} alt="Youtube Image" />
         );
       },
+      enableSorting: false,
     },
-    { header: "Page", accessorKey: "page_one_name" },
-    { header: "Sort", accessorKey: "youtube_sort" },
+    { header: "Page", accessorKey: "page_one_name", enableSorting: false },
+    { header: "Sort", accessorKey: "youtube_sort"},
     { header: "Course", accessorKey: "youtube_course" },
     { header: "Title", accessorKey: "youtube_title" },
-
-    {
-      header: "Status",
-      accessorKey: "youtube_status",
-      cell: ({ row }) => {
-        const isActive = row.original.youtube_status === "Active";
-        return (
-          <span
-            className={`px-3 py-1 text-xs font-medium rounded-full ${
-              isActive
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {row.original.youtube_status}
-          </span>
-        );
-      },
-    },
+    { header: "PlayList", accessorKey: "youtube_language" },
     {
       header: "Action",
+      enableSorting: false,
       cell: ({ row }) => (
         <Button
           size="icon"
@@ -78,16 +69,17 @@ const LetureYoutubeList = () => {
     },
   ];
 
+  if (isLoading) return <LoadingBar />;
   if (isError) return <ApiErrorPage onRetry={refetch} />;
 
-  if (isLoading) return <LoadingBar />;
+  const renderGroupedTabs = (data) => {
+    const pages = getPages(data);
 
-  return (
-    <div className="space-y-4">
+    return (
       <Tabs defaultValue="ALL">
         <TabsList>
           <TabsTrigger value="ALL">All</TabsTrigger>
-          {pageGroups.map((page) => (
+          {pages.map((page) => (
             <TabsTrigger key={page} value={page}>
               {page}
             </TabsTrigger>
@@ -96,7 +88,7 @@ const LetureYoutubeList = () => {
 
         <TabsContent value="ALL">
           <DataTable
-            data={list}
+            data={data}
             columns={columns}
             pageSize={10}
             searchPlaceholder="Search Lecture Youtube..."
@@ -107,25 +99,38 @@ const LetureYoutubeList = () => {
           />
         </TabsContent>
 
-        {pageGroups.map((page) => {
-          const filteredData = list.filter(
-            (item) => item.page_one_name === page
-          );
-          return (
-            <TabsContent key={page} value={page}>
-              <DataTable
-                data={filteredData}
-                columns={columns}
-                pageSize={10}
-                searchPlaceholder={`Search Lecture Youtube...`}
-                addButton={{
-                  to: "/lecture-youtube/create",
-                  label: "Add Lecture Youtube",
-                }}
-              />
-            </TabsContent>
-          );
-        })}
+        {pages.map((page) => (
+          <TabsContent key={page} value={page}>
+            <DataTable
+              data={groupByPage(data, page)}
+              columns={columns}
+              pageSize={10}
+              searchPlaceholder={`Search ${page}...`}
+              addButton={{
+                to: "/lecture-youtube/create",
+                label: "Add Lecture Youtube",
+              }}
+            />
+          </TabsContent>
+        ))}
+      </Tabs>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <Tabs defaultValue="ACTIVE">
+        <TabsList>
+          <TabsTrigger value="ACTIVE">Active</TabsTrigger>
+          <TabsTrigger value="INACTIVE">Inactive</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="ACTIVE">
+          {renderGroupedTabs(activeList)}
+        </TabsContent>
+        <TabsContent value="INACTIVE">
+          {renderGroupedTabs(inactiveList)}
+        </TabsContent>
       </Tabs>
     </div>
   );

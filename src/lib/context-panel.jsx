@@ -62,7 +62,7 @@ const AppProvider = ({ children }) => {
           setShowUpdateDialog({
             showUpdateDialog: localVersion !== serverVersion,
             version: serverVersion,
-          })
+          }),
         );
       }
 

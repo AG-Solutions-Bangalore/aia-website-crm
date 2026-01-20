@@ -43,10 +43,11 @@ const PopupList = () => {
           />
         );
       },
+      enableSorting: false,
     },
-    { header: "Page", accessorKey: "page_one_name" },
-    { header: "Required", accessorKey: "popup_required" },
-    { header: "Heading", accessorKey: "popup_heading" },
+    { header: "Page", accessorKey: "page_one_name", enableSorting: false },
+    { header: "Required", accessorKey: "popup_required", enableSorting: false },
+    { header: "Heading", accessorKey: "popup_heading", enableSorting: false },
     {
       header: "Action",
       accessorKey: "action",
@@ -59,6 +60,7 @@ const PopupList = () => {
           <Edit className="h-4 w-4" />
         </Button>
       ),
+      enableSorting: false,
     },
   ];
   if (isError) {

@@ -35,6 +35,7 @@ import { CKEditor } from "ckeditor4-react";
 const initialState = {
   student_uid: "",
   student_sort: "",
+  student_youtube_sort: "",
   student_name: "",
   student_course: "",
   student_designation: "",
@@ -163,7 +164,7 @@ const StudentForm = () => {
     const err = {};
     if (!data.student_uid) err.student_uid = "UID is required";
     if (!data.student_name) err.student_name = "Name is required";
-    if (!data.student_sort) err.student_sort = "Sort Order is required";
+
     if (!data.student_course) err.student_course = "Course is required";
     if (!data.student_have_testimonial)
       err.student_have_testimonial = "Testimonial is required";
@@ -243,12 +244,23 @@ const StudentForm = () => {
     }
 
     if (data.student_have_youtube === "Yes") {
+      if (!data.student_youtube_sort)
+        err.student_youtube_sort = "Sort is required";
       if (!data.student_youtube_link)
         err.student_youtube_link = "YouTube link is required";
       if (!preview.student_youtube_image && !data.student_youtube_image)
         err.student_youtube_image = "YouTube image is required";
       if (!data.student_youtube_image_alt)
         err.student_youtube_image_alt = "YouTube image alt is required";
+    }
+    if (data.student_recent_passout === "Yes") {
+      if (!preview.student_image && !data.student_image)
+        err.student_image = "Student image is required";
+      if (!data.student_image_alt)
+        err.student_image_alt = "Image alt is required";
+    }
+    if (data.student_have_youtube == "No") {
+      if (!data.student_sort) err.student_sort = "Sort Order is required";
     }
     console.log(err, "err");
     setErrors(err);
@@ -275,6 +287,7 @@ const StudentForm = () => {
     const formData = new FormData();
     formData.append("student_uid", data.student_uid || "");
     formData.append("student_sort", data.student_sort || "");
+    formData.append("student_youtube_sort", data.student_youtube_sort || "");
     formData.append("student_name", data.student_name || "");
     formData.append("student_course", data.student_course || "");
     formData.append("student_designation", data.student_designation || "");
@@ -403,7 +416,7 @@ const StudentForm = () => {
       ) {
         toast.success(res?.msg || "Saved successfully");
         queryClient.invalidateQueries({ queryKey: ["student-list"] });
-        navigate("/student-list");
+        navigate(-1);
       } else {
         toast.error(res?.msg || "Failed to save student");
       }
@@ -455,24 +468,24 @@ const StudentForm = () => {
                 </p>
               )}
             </div>
-
-            <div>
-              <label className="text-sm font-medium">Sort Order *</label>
-              <Input
-                type="number"
-                min={0}
-                value={data.student_sort}
-                onChange={(e) =>
-                  setData({ ...data, student_sort: e.target.value })
-                }
-              />
-              {errors.student_sort && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.student_sort}
-                </p>
-              )}
-            </div>
-
+            {data.student_have_youtube == "No" && (
+              <div>
+                <label className="text-sm font-medium">Sort Order *</label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={data.student_sort}
+                  onChange={(e) =>
+                    setData({ ...data, student_sort: e.target.value })
+                  }
+                />
+                {errors.student_sort && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.student_sort}
+                  </p>
+                )}
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium">Name *</label>
               <Input
@@ -766,7 +779,6 @@ const StudentForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {(data.student_have_testimonial === "Yes" ||
-              data.student_have_certificate === "Yes" ||
               data.student_recent_passout === "Yes") && (
               <>
                 <div className="col-span-2">
@@ -939,9 +951,25 @@ const StudentForm = () => {
               </>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
             {data?.student_have_youtube === "Yes" && (
               <>
+                <div>
+                  <label className="text-sm font-medium">Sort Order *</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={data.student_youtube_sort}
+                    onChange={(e) =>
+                      setData({ ...data, student_youtube_sort: e.target.value })
+                    }
+                  />
+                  {errors.student_youtube_sort && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.student_youtube_sort}
+                    </p>
+                  )}
+                </div>
                 <div>
                   <ImageUpload
                     id="student_youtube_image"

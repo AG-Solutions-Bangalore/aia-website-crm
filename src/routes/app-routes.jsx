@@ -5,8 +5,6 @@ import EditBanner from "@/app/banner/edit-banner";
 import BlogList from "@/app/blog/blog-list";
 import CreateBlog from "@/app/blog/create-blog";
 import CompanyList from "@/app/company/company-list";
-// import CreateCompany from "@/app/company/create-company";
-// import EditCompany from "@/app/company/edit-company";
 import CountryList from "@/app/country/country";
 import NotFound from "@/app/errors/not-found";
 import FaqForm from "@/app/faq/create-faq";
@@ -27,6 +25,12 @@ import { Route, Routes } from "react-router-dom";
 import EditBlog from "../app/blog/edit-blog";
 import AuthRoute from "./auth-route";
 import ProtectedRoute from "./protected-route";
+import StudentTestimonial from "@/app/student/student-testimonial";
+import StudentYoutube from "@/app/student/student-youtube";
+import StudentCertificate from "@/app/student/student-certificate";
+import StudentStory from "@/app/student/student-story";
+import StudentRecentPassOut from "@/app/student/student-recentpassout";
+import StudentOfficeImage from "@/app/student/student-officeimage";
 
 function AppRoutes() {
   return (
@@ -87,10 +91,50 @@ function AppRoutes() {
             }
           />
           <Route
-            path="/student-list"
+            path="/student-testimonial"
             element={
               <Suspense fallback={<LoadingBar />}>
-                <StudentList />
+                <StudentTestimonial />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/student-youtube"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <StudentYoutube />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/student-certificate"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <StudentCertificate />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/student-story"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <StudentStory />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/student-recent-passout"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <StudentRecentPassOut />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/student-officeimage"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <StudentOfficeImage />
               </Suspense>
             }
           />

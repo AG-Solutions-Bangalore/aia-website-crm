@@ -43,6 +43,7 @@ const CompanyList = () => {
           />
         );
       },
+      enableSorting: false,
     },
     {
       header: "Company Name",
@@ -51,6 +52,7 @@ const CompanyList = () => {
     {
       header: "Alt Text",
       accessorKey: "student_company_image_alt",
+      enableSorting: false,
     },
     {
       header: "Status",
@@ -84,6 +86,7 @@ const CompanyList = () => {
           </Button>
         </div>
       ),
+      enableSorting: false,
     },
   ];
   if (isLoading) return <LoadingBar />;
