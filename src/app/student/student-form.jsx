@@ -47,10 +47,14 @@ const initialState = {
   student_have_youtube: "No",
   student_recent_passout: "No",
   student_have_office_image: "No",
+  student_have_map: "No",
+  student_is_top: "No",
   student_have_story: "No",
+  student_marks: "",
   student_story_date: "",
   student_story_details: "",
   student_testimonial: "",
+  student_testimonial_link: "",
   student_linkedin_link: "",
   student_youtube_link: "",
   student_story_box_title1: "",
@@ -183,15 +187,27 @@ const StudentForm = () => {
       err.student_recent_passout = "Have Passout is required";
     if (!data.student_have_office_image)
       err.student_have_office_image = "Office Image is required";
+    if (!data.student_have_map)
+      err.student_have_map = "Student Have  Map is required";
+    if (!data.student_is_top) err.student_is_top = "Student Top is required";
 
     if (data.student_sort && isNaN(Number(data.student_sort)))
       err.student_sort = "Sort order must be a number";
 
-    if (data.student_have_testimonial === "Yes") {
+    if (
+      data.student_have_testimonial === "Yes" ||
+      data.student_is_top == "Yes" ||
+      data.student_have_map === "Yes"
+    ) {
       if (!preview.student_image && !data.student_image)
         err.student_image = "Student image is required";
       if (!data.student_image_alt)
         err.student_image_alt = "Image alt is required";
+    }
+    if (data.student_is_top == "Yes") {
+      if (!data.student_marks) err.student_marks = "Student Marks is required";
+    }
+    if (data.student_have_testimonial === "Yes") {
       if (!data.student_testimonial)
         err.student_testimonial = "Testimonial is required";
     }
@@ -313,8 +329,15 @@ const StudentForm = () => {
       "student_have_office_image",
       data.student_have_office_image || "",
     );
+    formData.append("student_have_map", data.student_have_map || "");
+    formData.append("student_is_top", data.student_is_top || "");
     formData.append("student_have_youtube", data.student_have_youtube || "");
     formData.append("student_testimonial", data.student_testimonial || "");
+    formData.append(
+      "student_testimonial_link",
+      data.student_testimonial_link || "",
+    );
+    formData.append("student_marks", data.student_marks || "");
     formData.append("student_have_story", data.student_have_story || "");
     formData.append("student_story_details", data.student_story_details || "");
     formData.append("student_story_date", data.student_story_date || "");
@@ -640,7 +663,7 @@ const StudentForm = () => {
               </div>
             )}
           </div>
-          <div className="flex gap-4 my-4">
+          <div className="grid grid-cols-6 gap-2 my-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">Have Testimonial</label>
 
@@ -756,30 +779,66 @@ const StudentForm = () => {
                 />
               </div>
             </div>
-          </div>
-          {isEditMode && (
             <div className="flex items-center h-full ml-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">Status *</label>
+                <label className="text-sm font-medium">Have Map</label>
 
                 <GroupButton
                   className="w-fit"
-                  value={data.student_status}
+                  value={data.student_have_map}
                   onChange={(value) =>
-                    setData({ ...data, student_status: value })
+                    setData({ ...data, student_have_map: value })
                   }
                   options={[
-                    { label: "Active", value: "Active" },
-                    { label: "Inactive", value: "Inactive" },
+                    { label: "Yes", value: "Yes" },
+                    { label: "No", value: "No" },
                   ]}
                 />
               </div>
             </div>
-          )}
+            <div className="flex items-center h-full ml-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium">Is Top</label>
+
+                <GroupButton
+                  className="w-fit"
+                  value={data.student_is_top}
+                  onChange={(value) =>
+                    setData({ ...data, student_is_top: value })
+                  }
+                  options={[
+                    { label: "Yes", value: "Yes" },
+                    { label: "No", value: "No" },
+                  ]}
+                />
+              </div>
+            </div>
+            {isEditMode && (
+              <div className="flex items-center h-full ml-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium">Status *</label>
+
+                  <GroupButton
+                    className="w-fit"
+                    value={data.student_status}
+                    onChange={(value) =>
+                      setData({ ...data, student_status: value })
+                    }
+                    options={[
+                      { label: "Active", value: "Active" },
+                      { label: "Inactive", value: "Inactive" },
+                    ]}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {(data.student_have_testimonial === "Yes" ||
-              data.student_recent_passout === "Yes") && (
+              data.student_recent_passout === "Yes" ||
+              data.student_have_map === "Yes" ||
+              data.student_is_top === "Yes") && (
               <>
                 <div className="col-span-2">
                   <ImageUpload
@@ -822,24 +881,42 @@ const StudentForm = () => {
             )}
 
             {data?.student_have_testimonial === "Yes" && (
-              <div className="col-span-2">
-                <label className="text-sm font-medium block">
-                  Testimonial *
-                </label>
-                <Textarea
-                  placeholder="Enter testimonial"
-                  value={data.student_testimonial}
-                  onChange={(e) =>
-                    setData({ ...data, student_testimonial: e.target.value })
-                  }
-                  rows={4}
-                />
-                {errors.student_testimonial && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.student_testimonial}
-                  </p>
-                )}
-              </div>
+              <>
+                <div className="col-span-2">
+                  <label className="text-sm font-medium block">
+                    Testimonial *
+                  </label>
+                  <Textarea
+                    placeholder="Enter testimonial"
+                    value={data.student_testimonial}
+                    onChange={(e) =>
+                      setData({ ...data, student_testimonial: e.target.value })
+                    }
+                    rows={4}
+                  />
+                  {errors.student_testimonial && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.student_testimonial}
+                    </p>
+                  )}
+                </div>
+                <div className="col-span-2">
+                  <label className="text-sm font-medium block">
+                    Testimonial Link
+                  </label>
+                  <Textarea
+                    placeholder="Enter testimonial"
+                    value={data.student_testimonial_link}
+                    onChange={(e) =>
+                      setData({
+                        ...data,
+                        student_testimonial_link: e.target.value,
+                      })
+                    }
+                    rows={4}
+                  />
+                </div>
+              </>
             )}
 
             {(data?.student_have_certificate === "Yes" ||
@@ -1372,6 +1449,28 @@ const StudentForm = () => {
                   )}
                 </div>
               </>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {data?.student_is_top === "Yes" && (
+              <div>
+                <label className="text-sm font-medium block">
+                  Student Marks *
+                </label>
+                <Textarea
+                  placeholder="Example: 91,44,55,67"
+                  value={data.student_marks}
+                  onChange={(e) =>
+                    setData({ ...data, student_marks: e.target.value })
+                  }
+                  rows={4}
+                />
+                {errors.student_marks && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.student_marks}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </Card>
