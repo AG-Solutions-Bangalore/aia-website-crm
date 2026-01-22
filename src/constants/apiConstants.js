@@ -5,10 +5,20 @@ export const PANEL_CHECK = {
   getPanelStatus: "/panel-check-status",
   getEnvStatus: "/panel-fetch-dotenv",
 };
+export const SIDE_POPUP_API = {
+  list: "/side-popup",
+  byId: (id) => `/side-popup/${id}`,
+  updateById: (id) => `/side-popup/${id}`,
+};
 export const POPUP_API = {
   list: "/popup",
   byId: (id) => `/popup/${id}`,
   updateById: (id) => `/popup/${id}?_method=PUT`,
+};
+export const PR_API = {
+  list: "/pr",
+  byId: (id) => `/pr/${id}`,
+  updateById: (id) => `/pr/${id}?_method=PUT`,
 };
 export const BANNER_API = {
   list: "/banner",
@@ -87,3 +97,4 @@ export const STUDENT_API = {
   byId: (id) => `/student/${id}`,
   updateById: (id) => `/student/${id}?_method=PUT`,
 };
+// 427*240

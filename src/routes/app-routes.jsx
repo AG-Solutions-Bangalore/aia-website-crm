@@ -15,8 +15,14 @@ import LetureYoutubeList from "@/app/lecture-youtube/lecture-youtube-list";
 import NewsLetter from "@/app/newsletter/news-letter";
 import PopupList from "@/app/popup/popup";
 import Settings from "@/app/setting/setting";
+import SidePopupList from "@/app/sidepopup/sidepopup-list";
+import StudentCertificate from "@/app/student/student-certificate";
 import StudentForm from "@/app/student/student-form";
-import StudentList from "@/app/student/student-list";
+import StudentOfficeImage from "@/app/student/student-officeimage";
+import StudentRecentPassOut from "@/app/student/student-recentpassout";
+import StudentStory from "@/app/student/student-story";
+import StudentTestimonial from "@/app/student/student-testimonial";
+import StudentYoutube from "@/app/student/student-youtube";
 import Maintenance from "@/components/common/maintenance";
 import ErrorBoundary from "@/components/error-boundry/error-boundry";
 import LoadingBar from "@/components/loader/loading-bar";
@@ -25,12 +31,6 @@ import { Route, Routes } from "react-router-dom";
 import EditBlog from "../app/blog/edit-blog";
 import AuthRoute from "./auth-route";
 import ProtectedRoute from "./protected-route";
-import StudentTestimonial from "@/app/student/student-testimonial";
-import StudentYoutube from "@/app/student/student-youtube";
-import StudentCertificate from "@/app/student/student-certificate";
-import StudentStory from "@/app/student/student-story";
-import StudentRecentPassOut from "@/app/student/student-recentpassout";
-import StudentOfficeImage from "@/app/student/student-officeimage";
 
 function AppRoutes() {
   return (
@@ -163,6 +163,15 @@ function AppRoutes() {
               </Suspense>
             }
           />
+          <Route
+            path="/side-popup-list"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <SidePopupList />
+              </Suspense>
+            }
+          />
+
           <Route
             path="/banner-list"
             element={

@@ -37,6 +37,7 @@ const NAVIGATION_CONFIG = {
       icon: LayoutGrid,
       isActive: false,
     },
+
     BANNERLIST: {
       title: "Banner",
       url: "/banner-list",
@@ -129,6 +130,18 @@ const NAVIGATION_CONFIG = {
       icon: Frame,
       isActive: false,
     },
+    SIDEPOPUPLIST: {
+      title: "SidePopUp",
+      url: "/side-popup-list",
+      icon: LayoutGrid,
+      isActive: false,
+    },
+    PRLIST: {
+      title: "PR",
+      url: "/pr-list",
+      icon: LayoutGrid,
+      isActive: false,
+    },
   },
 
   REPORTS: {
@@ -145,6 +158,7 @@ const USER_ROLE_PERMISSIONS = {
   1: {
     navMain: [
       "POPUPLIST",
+
       "BANNERLIST",
       "COMPANYLIST",
       "COUNTRYLIST",
@@ -154,6 +168,7 @@ const USER_ROLE_PERMISSIONS = {
       "FAQLIST",
       "GALLERYLIST",
       "BLOGLIST",
+      "SIDEPOPUPLIST",
       // "SETTINGS",
     ],
     navMainReport: ["SUMMARY", "DOWNLOADS", "OTHER", "SETTINGS"],
@@ -175,6 +190,7 @@ const USER_ROLE_PERMISSIONS = {
       "SCHOOL",
       "FAQLIST",
       "BLOGLIST",
+      "SIDEPOPUPLIST",
     ],
     navMainReport: ["SUMMARY", "DOWNLOADS", "OTHER", "SETTINGS"],
   },
@@ -195,6 +211,7 @@ const USER_ROLE_PERMISSIONS = {
       "SCHOOL",
       "FAQLIST",
       "BLOGLIST",
+      "SIDEPOPUPLIST",
     ],
     navMainReport: ["SUMMARY", "DOWNLOADS", "OTHER", "SETTINGS"],
   },
@@ -215,10 +232,10 @@ const USER_ROLE_PERMISSIONS = {
       "SCHOOL",
       "FAQLIST",
       "BLOGLIST",
+      "SIDEPOPUPLIST",
     ],
     navMainReport: ["SUMMARY", "DOWNLOADS", "OTHER", "SETTINGS"],
   },
-
 };
 
 const LIMITED_MASTER_SETTINGS = {
