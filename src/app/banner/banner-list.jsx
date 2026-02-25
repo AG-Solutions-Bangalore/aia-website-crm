@@ -44,7 +44,12 @@ const BannerList = () => {
     {
       header: "Sort Order",
       accessorKey: "banner_sort",
-      enableSorting: false,
+      enableSorting: true,
+    },
+    {
+      header: "Banner For",
+      accessorKey: "banner_for",
+      enableSorting: true,
     },
     {
       header: "Banner Text",
@@ -70,7 +75,7 @@ const BannerList = () => {
           {row.original.banner_status}
         </span>
       ),
-      enableSorting: false,
+      enableSorting: true,
     },
     {
       header: "Actions",
