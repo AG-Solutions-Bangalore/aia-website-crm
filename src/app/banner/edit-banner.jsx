@@ -7,8 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { BANNER_API } from "@/constants/apiConstants";
+import { BANNER_API, YOUTUBEFOR_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { getNoImageUrl } from "@/utils/imageUtils";
@@ -27,6 +34,8 @@ const EditBanner = () => {
   const [formData, setFormData] = useState({
     banner_sort: "",
     banner_text: "",
+    banner_sub_text: "",
+    banner_for: "",
     banner_link: "",
     banner_image_alt: "",
     banner_status: "Active",
@@ -37,7 +46,14 @@ const EditBanner = () => {
   const [preview, setPreview] = useState({
     banner_image: "",
   });
-
+  const {
+    data: bannerForData,
+    loading: bannerForLoading,
+    error: bannerForError,
+  } = useGetApiMutation({
+    url: YOUTUBEFOR_API.list,
+    queryKey: ["bannerFor"],
+  });
   const {
     data: bannerData,
     isLoading,
@@ -55,6 +71,8 @@ const EditBanner = () => {
         banner_sort: data.banner_sort || "",
         banner_text: data.banner_text || "",
         banner_link: data.banner_link || "",
+        banner_sub_text: data.banner_sub_text || "",
+        banner_for: data.banner_for || "",
         banner_image_alt: data.banner_image_alt || "",
         banner_status: data.banner_status || "Active",
       });
@@ -97,19 +115,18 @@ const EditBanner = () => {
     const newErrors = {};
     let isValid = true;
 
-    if (!formData.banner_sort.trim()) {
+    if (!String(formData.banner_sort || "").trim()) {
       newErrors.banner_sort = "Sort order is required";
       isValid = false;
-    } else if (!/^\d+$/.test(formData.banner_sort)) {
+    } else if (!/^\d+$/.test(String(formData.banner_sort))) {
       newErrors.banner_sort = "Sort order must be a number";
       isValid = false;
     }
 
-    if (formData.banner_link.trim() && !isValidUrl(formData.banner_link)) {
-      newErrors.banner_link = "Please enter a valid URL";
+    if (!formData.banner_for.trim()) {
+      newErrors.banner_for = "Banner For is required";
       isValid = false;
     }
-
     if (!formData.banner_image_alt.trim()) {
       newErrors.banner_image_alt = "Alt text is required";
       isValid = false;
@@ -124,14 +141,6 @@ const EditBanner = () => {
     return isValid;
   };
 
-  const isValidUrl = (string) => {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  };
   const handleImageChange = (fieldName, file) => {
     if (file) {
       setFormData({ ...formData, [fieldName]: file });
@@ -154,9 +163,10 @@ const EditBanner = () => {
     }
 
     const formDataObj = new FormData();
-
-    formDataObj.append("banner_sort", formData.banner_sort);
     formDataObj.append("banner_text", formData.banner_text);
+    formDataObj.append("banner_sub_text", formData.banner_sub_text);
+    formDataObj.append("banner_sort", formData.banner_sort);
+    formDataObj.append("banner_for", formData.banner_for);
     formDataObj.append("banner_link", formData.banner_link || "");
     formDataObj.append("banner_image_alt", formData.banner_image_alt);
     formDataObj.append("banner_status", formData.banner_status);
@@ -185,7 +195,6 @@ const EditBanner = () => {
         toast.error(res?.msg || "Failed to update banner");
       }
     } catch (error) {
-
       const errors = error?.response?.data?.msg;
       toast.error(errors || "Something went wrong");
 
@@ -193,10 +202,10 @@ const EditBanner = () => {
     }
   };
 
-  if (isError) return <ApiErrorPage onRetry={refetch} />;
+  if (isError || bannerForError) return <ApiErrorPage onRetry={refetch} />;
   return (
     <div className="max-w-full mx-auto">
-      {isLoading && <LoadingBar />}
+      {(isLoading || bannerForLoading) && <LoadingBar />}
 
       <PageHeader
         icon={Image}
@@ -237,6 +246,27 @@ const EditBanner = () => {
             id="edit-banner-form"
             className="grid grid-cols-1 md:grid-cols-2 gap-2"
           >
+            <div>
+              <label className="text-sm font-medium">Banner For *</label>
+              <Select
+                value={formData.banner_for}
+                onValueChange={(v) => setData({ ...formData, banner_for: v })}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select Banner For" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bannerForData?.data?.map((item, key) => (
+                    <SelectItem key={key} value={item.page_one_url}>
+                      {item.page_one_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.banner_for && (
+                <p className="text-xs text-red-500 mt-1">{errors.banner_for}</p>
+              )}
+            </div>
             <div className="space-y-2">
               <Label htmlFor="banner_sort" className="text-sm font-medium">
                 Sort Order *
@@ -269,7 +299,18 @@ const EditBanner = () => {
                 className={errors.banner_text ? "border-red-500" : ""}
               />
             </div>
-
+            <div className="space-y-2">
+              <Label htmlFor="banner_sub_text" className="text-sm font-medium">
+                Banner Sub Text
+              </Label>
+              <Textarea
+                id="banner_sub_text"
+                name="banner_sub_text"
+                placeholder="Enter Sub banner text"
+                value={formData.banner_sub_text}
+                onChange={handleInputChange}
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="banner_link" className="text-sm font-medium">
                 Banner Link
@@ -277,7 +318,6 @@ const EditBanner = () => {
               <Textarea
                 id="banner_link"
                 name="banner_link"
-                type="url"
                 placeholder="https://example.com"
                 value={formData.banner_link}
                 onChange={handleInputChange}
