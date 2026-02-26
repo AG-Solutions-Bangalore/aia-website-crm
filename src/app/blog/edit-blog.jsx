@@ -1269,6 +1269,7 @@ const EditBlog = () => {
                                   <SelectItem value="h4">H4</SelectItem>
                                   <SelectItem value="h5">H5</SelectItem>
                                   <SelectItem value="h6">H6</SelectItem>
+                                  <SelectItem value="p">Paragraph</SelectItem>
                                 </SelectContent>
                               </Select>
                               {subErrors[index]?.blog_sub_heading_tag && (
