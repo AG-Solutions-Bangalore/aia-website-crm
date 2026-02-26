@@ -79,6 +79,7 @@ const CreateBlog = () => {
     blog_created: new Date().toISOString().split("T")[0],
     blog_images_alt: "",
     blog_slug: "",
+    blog_status: "Draft",
   });
 
   const [blogSubs, setBlogSubs] = useState([
@@ -328,6 +329,10 @@ const CreateBlog = () => {
       newErrors.blog_course = "Course is required";
       isValid = false;
     }
+    if (!formData.blog_status.trim()) {
+      newErrors.blog_status = "Status is required";
+      isValid = false;
+    }
 
     if (!formData.blog_created.trim()) {
       newErrors.blog_created = "Blog date is required";
@@ -409,6 +414,7 @@ const CreateBlog = () => {
     //   "blog_short_description",
     //   formData.blog_short_description
     // );
+    formDataObj.append("blog_status", formData.blog_status);
     formDataObj.append("blog_course", formData.blog_course);
     formDataObj.append("blog_index", formData.blog_index);
     formDataObj.append("blog_trending", formData.blog_trending);
@@ -809,6 +815,27 @@ const CreateBlog = () => {
                             {errors.blog_images_alt}
                           </p>
                         )}
+                      </div>
+                      <div className="flex items-center h-full ml-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-sm font-medium">
+                            Status *
+                          </label>
+
+                          <GroupButton
+                            className="w-fit"
+                            value={formData.blog_status}
+                            onChange={(value) =>
+                              setFormData({ ...formData, blog_status: value })
+                            }
+                            options={[
+                              { label: "Active", value: "Active" },
+                              { label: "Inactive", value: "Inactive" },
+                              { label: "Draft", value: "Draft" },
+                              { label: "Scheduled", value: "Scheduled" },
+                            ]}
+                          />
+                        </div>
                       </div>
                     </div>
                     <div className="space-y-2">

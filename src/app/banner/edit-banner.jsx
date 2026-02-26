@@ -250,7 +250,9 @@ const EditBanner = () => {
               <label className="text-sm font-medium">Banner For *</label>
               <Select
                 value={formData.banner_for}
-                onValueChange={(v) => setData({ ...formData, banner_for: v })}
+                onValueChange={(v) =>
+                  setFormData({ ...formData, banner_for: v })
+                }
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select Banner For" />
@@ -285,32 +287,38 @@ const EditBanner = () => {
                 <p className="text-sm text-red-500">{errors.banner_sort}</p>
               )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="banner_text" className="text-sm font-medium">
-                Banner Text
-              </Label>
-              <Textarea
-                id="banner_text"
-                name="banner_text"
-                placeholder="Enter banner text"
-                value={formData.banner_text}
-                onChange={handleInputChange}
-                className={errors.banner_text ? "border-red-500" : ""}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="banner_sub_text" className="text-sm font-medium">
-                Banner Sub Text
-              </Label>
-              <Textarea
-                id="banner_sub_text"
-                name="banner_sub_text"
-                placeholder="Enter Sub banner text"
-                value={formData.banner_sub_text}
-                onChange={handleInputChange}
-              />
-            </div>
+            {formData.banner_for == "home" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="banner_text" className="text-sm font-medium">
+                    Banner Text
+                  </Label>
+                  <Textarea
+                    id="banner_text"
+                    name="banner_text"
+                    placeholder="Enter banner text"
+                    value={formData.banner_text}
+                    onChange={handleInputChange}
+                    className={errors.banner_text ? "border-red-500" : ""}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="banner_sub_text"
+                    className="text-sm font-medium"
+                  >
+                    Banner Sub Text
+                  </Label>
+                  <Textarea
+                    id="banner_sub_text"
+                    name="banner_sub_text"
+                    placeholder="Enter Sub banner text"
+                    value={formData.banner_sub_text}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label htmlFor="banner_link" className="text-sm font-medium">
                 Banner Link
