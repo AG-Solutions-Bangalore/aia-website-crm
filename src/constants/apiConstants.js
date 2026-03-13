@@ -100,6 +100,7 @@ export const NEWSLETTER_API = {
 export const STUDENT_API = {
   list: "/student",
   byId: (id) => `/student/${id}`,
+  deleteImage: (id) => `/student-remove-certificate-image/${id}`,
   updateById: (id) => `/student/${id}?_method=PUT`,
 };
 // 427*240

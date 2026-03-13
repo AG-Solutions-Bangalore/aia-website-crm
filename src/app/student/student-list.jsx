@@ -85,6 +85,22 @@ const StudentList = ({ enable }) => {
             },
             enableSorting: false,
           },
+          {
+            header: "Other Certificate Image",
+            accessorKey: "student_other_certificate_image",
+            cell: ({ row }) => {
+              const fileName = row.original.student_other_certificate_image;
+              if (!fileName) return "-";
+              return (
+                <ImageCell
+                  src={`${studentBaseUrl}${fileName}`}
+                  fallback={noImageUrl}
+                  alt="Other Certificate Image"
+                />
+              );
+            },
+            enableSorting: false,
+          },
         ]
       : []),
     ...(enable == "top"
