@@ -31,7 +31,16 @@ import { Card } from "@/components/ui/card";
 import CompanyDialog from "../company/create-company";
 import CountryForm from "../country/country-form";
 import { CKEditor } from "ckeditor4-react";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 const initialState = {
   student_uid: "",
   student_sort: "",
@@ -93,7 +102,8 @@ const StudentForm = () => {
   const queryClient = useQueryClient();
   const [openCompany, setCompanyOpen] = useState(false);
   const [openCountry, setCountryOpen] = useState(false);
-
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteField, setDeleteField] = useState(null);
   const [data, setData] = useState(initialState);
   const [errors, setErrors] = useState({});
   const [preview, setPreview] = useState({});
@@ -104,6 +114,7 @@ const StudentForm = () => {
     error: fetchError,
   } = useApiMutation();
   const { trigger: submitStudent, loading: submitLoading } = useApiMutation();
+  const { trigger: deleteImage, loading: deleteloading } = useApiMutation();
 
   const { data: countriesData } = useGetApiMutation({
     url: COUNTRY_API.dropdown,
@@ -139,32 +150,32 @@ const StudentForm = () => {
       setPreview({
         student_image: res?.data?.student_image
           ? `${baseUrl}${res.data.student_image}`
-          : noImageUrl,
+          : "",
 
         student_office_image: res?.data?.student_office_image
           ? `${baseUrl}${res.data.student_office_image}`
-          : noImageUrl,
+          : "",
 
         student_other_certificate_image: res?.data
           ?.student_other_certificate_image
           ? `${baseUrl}${res.data.student_other_certificate_image}`
-          : noImageUrl,
+          : "",
         student_certificate_image: res?.data?.student_certificate_image
           ? `${baseUrl}${res.data.student_certificate_image}`
-          : noImageUrl,
+          : "",
         student_marks_image: res?.data?.student_marks_image
           ? `${baseUrl}${res.data.student_marks_image}`
-          : noImageUrl,
+          : "",
 
         student_youtube_image: res?.data?.student_youtube_image
           ? `${baseUrl}${res.data.student_youtube_image}`
-          : noImageUrl,
+          : "",
         student_story_banner_image: res?.data?.student_story_banner_image
           ? `${baseUrl}${res.data.student_story_banner_image}`
-          : noImageUrl,
+          : "",
         student_screenshot_image: res?.data?.student_screenshot_image
           ? `${baseUrl}${res.data.student_screenshot_image}`
-          : noImageUrl,
+          : "",
       });
     } catch {
       toast.error("Failed to load student data");
@@ -334,7 +345,41 @@ const StudentForm = () => {
     setData({ ...data, [fieldName]: null });
     setPreview({ ...preview, [fieldName]: "" });
   };
+  const confirmDeleteImage = async () => {
+    const fieldTypeMap = {
+      student_certificate_image: 1,
+      student_other_certificate_image: 2,
+    };
 
+    const type = fieldTypeMap[deleteField];
+
+    if (!type) {
+      toast.error("Invalid image field");
+      return;
+    }
+
+    try {
+      const res = await deleteImage({
+        url: STUDENT_API.deleteImage(id),
+        method: "put",
+        data: { type },
+      });
+      if (res?.code === 201) {
+        toast.success(res?.msg || "Image removed successfully");
+
+        navigate("/student-list");
+      } else {
+        toast.error(res?.msg || "Failed to remove image");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(
+        error?.response?.data?.message || "Something went wrong while deleting",
+      );
+    } finally {
+      setDeleteDialog(false);
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -1058,9 +1103,14 @@ const StudentForm = () => {
                         e.target.files?.[0],
                       )
                     }
-                    onRemove={() =>
-                      handleRemoveImage("student_certificate_image")
-                    }
+                    onRemove={() => {
+                      if (preview.student_certificate_image && isEditMode) {
+                        setDeleteField("student_certificate_image");
+                        setDeleteDialog(true);
+                      } else {
+                        handleRemoveImage("student_certificate_image");
+                      }
+                    }}
                     error={errors.student_certificate_image}
                     format="WEBP"
                     allowedExtensions={["webp"]}
@@ -1102,9 +1152,17 @@ const StudentForm = () => {
                         e.target.files?.[0],
                       )
                     }
-                    onRemove={() =>
-                      handleRemoveImage("student_other_certificate_image")
-                    }
+                    onRemove={() => {
+                      if (
+                        preview.student_other_certificate_image &&
+                        isEditMode
+                      ) {
+                        setDeleteField("student_other_certificate_image");
+                        setDeleteDialog(true);
+                      } else {
+                        handleRemoveImage("student_other_certificate_image");
+                      }
+                    }}
                     format="WEBP"
                     allowedExtensions={["webp"]}
                     maxSize={5}
@@ -1699,6 +1757,26 @@ const StudentForm = () => {
         onClose={() => setCountryOpen(false)}
         countryId={null}
       />
+      <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Certificate Image?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will permanently delete the certificate image.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600"
+              onClick={confirmDeleteImage}
+            >
+              Yes, Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
